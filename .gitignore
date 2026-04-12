@@ -13,6 +13,14 @@ yarn-error.log*
 *.db-journal
 *.sqlite
 *.sqlite3
+*-journal
+
+# Python cache/bytecode
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
 
 # Environment files
 .env
@@ -29,4 +37,3 @@ dist/
 build/
 .cache/
 coverage/
-
