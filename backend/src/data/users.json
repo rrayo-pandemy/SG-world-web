@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "name": "Admin AuraMarket",
+    "email": "admin@auramarket.com",
+    "passwordHash": "$2a$10$5dzkwHItf5IcmcAwRyDVnOzxKIumjOMd.P1qoYMJgWf4u9zVD.ZOW",
+    "role": "admin",
+    "createdAt": "2026-04-05T22:00:19.605Z",
+    "isPremium": true,
+    "updatedAt": "2026-04-07T04:27:07.454Z"
+  },
+  {
+    "id": 2,
+    "name": "Cliente Demo",
+    "email": "cliente@auramarket.com",
+    "passwordHash": "$2a$10$TikK8lYTXkKs2jHSyInej.NgjrF0Tbkf1qFfJq05P8TYKQxApGt5O",
+    "role": "user",
+    "createdAt": "2026-04-05T22:00:19.606Z",
+    "isPremium": false,
+    "updatedAt": "2026-04-07T04:27:02.639Z"
+  }
+]

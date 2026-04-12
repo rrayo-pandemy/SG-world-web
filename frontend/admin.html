@@ -1,0 +1,181 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b3c5d">
+    <script>
+        (function () {
+            try {
+                var savedTheme = localStorage.getItem('theme');
+                if (savedTheme === 'light' || savedTheme === 'dark') {
+                    document.documentElement.setAttribute('data-theme', savedTheme);
+                }
+            } catch (e) {}
+        })();
+    </script>
+    <title>AuraMarket Admin</title>
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <header class="topbar">
+        <div>
+            <h1>Panel de Administracion</h1>
+            <p>Gestion de usuarios y roles en tiempo real</p>
+        </div>
+        <div class="topbar-actions">
+            <button class="theme-toggle" aria-label="Activar modo oscuro" aria-pressed="false" data-theme-glyph="☾" type="button">
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                    <path d="M21 12.79A9 9 0 0111.21 3c0 .34.02.67.05 1A7 7 0 1019 19.74c.33.03.66.05 1 .05z" fill="currentColor"/>
+                </svg>
+            </button>
+            <button id="logout-btn" class="btn btn-danger hidden" type="button">Cerrar sesion</button>
+        </div>
+    </header>
+
+    <main class="layout">
+        <section class="card" id="login-card">
+            <h2>Login administrador</h2>
+            <form id="admin-login-form" class="grid-form">
+                <label>
+                    Email
+                    <input type="email" id="login-email" placeholder="" required>
+                </label>
+                <label>
+                    Password
+                    <input type="password" id="login-password" placeholder="" required>
+                </label>
+                <button type="submit" class="btn">Ingresar</button>
+            </form>
+        </section>
+
+        <section class="card hidden" id="admin-panel">
+            <div class="panel-header">
+                <h2>Usuarios registrados</h2>
+                <button id="refresh-users" class="btn btn-secondary" type="button">Actualizar</button>
+            </div>
+
+            <div class="forms-grid">
+                <form id="create-user-form" class="grid-form card inset">
+                    <h3>Crear usuario</h3>
+                    <label>Nombre<input type="text" id="create-name" required></label>
+                    <label>Email<input type="email" id="create-email" required></label>
+                    <label>Password<input type="password" id="create-password" required></label>
+                    <label>Rol
+                        <select id="create-role">
+                            <option value="user">user</option>
+                            <option value="admin">admin</option>
+                        </select>
+                    </label>
+                    <label class="check-label"><input type="checkbox" id="create-premium"> Premium</label>
+                    <button class="btn" type="submit">Agregar usuario</button>
+                </form>
+
+                <form id="edit-user-form" class="grid-form card inset hidden">
+                    <h3>Editar usuario</h3>
+                    <input type="hidden" id="edit-id">
+                    <label>Nombre<input type="text" id="edit-name" required></label>
+                    <label>Email<input type="email" id="edit-email" required></label>
+                    <label>Password nueva (opcional)<input type="password" id="edit-password"></label>
+                    <label>Rol
+                        <select id="edit-role">
+                            <option value="user">user</option>
+                            <option value="admin">admin</option>
+                        </select>
+                    </label>
+                    <label class="check-label"><input type="checkbox" id="edit-premium"> Premium</label>
+                    <div class="inline-actions">
+                        <button class="btn" type="submit">Guardar cambios</button>
+                        <button id="cancel-edit" class="btn btn-secondary" type="button">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Rol</th>
+                            <th>Premium</th>
+                            <th>Creado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-tbody"></tbody>
+                </table>
+            </div>
+
+            <div class="panel-header panel-divider">
+                <h2>Productos</h2>
+                <button id="refresh-products" class="btn btn-secondary" type="button">Actualizar</button>
+            </div>
+
+            <form id="edit-product-form" class="grid-form card inset hidden">
+                <h3>Editar producto</h3>
+                <input type="hidden" id="product-edit-id">
+                <label>SKU<input type="text" id="product-edit-sku" required></label>
+                <label>Nombre<input type="text" id="product-edit-name" required></label>
+                <label>Descripcion<textarea id="product-edit-description" rows="3" required></textarea></label>
+                <label>Categoria<input type="text" id="product-edit-category" required></label>
+                <label>Precio<input type="number" id="product-edit-price" min="0" step="0.01" required></label>
+                <label>Stock<input type="number" id="product-edit-stock" min="0" step="1" required></label>
+                <label>Imagen URL<input type="url" id="product-edit-image" required></label>
+                <label class="check-label"><input type="checkbox" id="product-edit-premium"> Premium</label>
+                <label class="check-label"><input type="checkbox" id="product-edit-badge-nuevo"> Nuevo</label>
+                <label class="check-label"><input type="checkbox" id="product-edit-badge-edicion"> Edicion</label>
+                <div class="inline-actions">
+                    <button class="btn" type="submit">Guardar producto</button>
+                    <button id="cancel-product-edit" class="btn btn-secondary" type="button">Cancelar</button>
+                </div>
+            </form>
+
+            <div class="table-wrap">
+                <form id="create-product-form" class="grid-form card inset">
+                    <h3>Agregar producto</h3>
+                    <label>SKU (opcional)<input type="text" id="create-product-sku"></label>
+                    <label>Nombre<input type="text" id="create-product-name" required></label>
+                    <label>Descripcion<textarea id="create-product-description" rows="3" minlength="10" required></textarea></label>
+                    <label>Categoria<input type="text" id="create-product-category" minlength="3" required></label>
+                    <label>Precio<input type="number" id="create-product-price" min="0.01" step="0.01" required></label>
+                    <label>Stock<input type="number" id="create-product-stock" min="0" step="1" required></label>
+                    <label>Imagen URL (opcional)<input type="url" id="create-product-image"></label>
+                    <label class="check-label"><input type="checkbox" id="create-product-premium"> Premium</label>
+                    <label class="check-label"><input type="checkbox" id="create-product-badge-nuevo"> Nuevo</label>
+                    <label class="check-label"><input type="checkbox" id="create-product-badge-edicion"> Edicion</label>
+                    <button class="btn" type="submit">Agregar producto</button>
+                </form>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>SKU</th>
+                            <th>Nombre</th>
+                            <th>Categoria</th>
+                            <th>Precio</th>
+                            <th>Stock</th>
+                            <th>Premium</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="products-tbody"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast" class="toast" aria-live="polite"></div>
+
+    <script>
+        window.API_BASE = window.location.origin;
+        if (window.location.port === '8000') {
+            window.API_BASE = 'http://localhost:5000';
+        }
+    </script>
+    <script src="js/theme-manager.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>

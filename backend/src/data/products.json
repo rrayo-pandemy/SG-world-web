@@ -1,0 +1,83 @@
+[
+  {
+    "id": 1,
+    "sku": "AURA-ESSENCE-01",
+    "name": "Auroral Essence",
+    "description": "Serum luminoso con extractos botanicos del norte.",
+    "category": "skincare",
+    "price": 49.99,
+    "stock": 45,
+    "isPremium": false,
+    "badge": "Edicion",
+    "image": "https://via.placeholder.com/500x400/0f6f7f/f3efe5?text=Auroral+Essence",
+    "createdAt": "2026-04-05T22:00:19.607Z",
+    "updatedAt": "2026-04-07T04:14:15.360Z"
+  },
+  {
+    "id": 2,
+    "sku": "AURA-RELAX-02",
+    "name": "Linen Calm Diffuser",
+    "description": "Difusor con notas limpias y acabado premium.",
+    "category": "home",
+    "price": 79,
+    "stock": 20,
+    "isPremium": false,
+    "badge": "Nuevo",
+    "image": "https://via.placeholder.com/500x400/0b3c5d/f7f1e3?text=Linen+Calm",
+    "createdAt": "2026-04-05T22:00:19.607Z",
+    "updatedAt": "2026-04-07T04:28:14.423Z"
+  },
+  {
+    "id": 3,
+    "sku": "AURA-DIGI-03",
+    "name": "Teal Smart Bottle",
+    "description": "Botella termica conectada con recordatorio inteligente.",
+    "category": "lifestyle",
+    "price": 64.5,
+    "stock": 32,
+    "isPremium": true,
+    "badge": null,
+    "image": "https://via.placeholder.com/500x400/1f9e9b/f8efe1?text=Smart+Bottle",
+    "createdAt": "2026-04-05T22:00:19.607Z"
+  },
+  {
+    "id": 4,
+    "sku": "AURA-APR-04",
+    "name": "Apricot Balance Set",
+    "description": "Kit de cuidado diario para piel mixta.",
+    "category": "wellness",
+    "price": 92,
+    "stock": 15,
+    "isPremium": true,
+    "badge": "Edicion",
+    "image": "https://via.placeholder.com/500x400/f59f72/faf7ef?text=Balance+Set",
+    "createdAt": "2026-04-05T22:00:19.607Z"
+  },
+  {
+    "id": 5,
+    "sku": "AURA-0005",
+    "name": "Palets 100 x 120 cm",
+    "description": "Palets de madera resistentes para apilar objetos",
+    "category": "Fabrica",
+    "price": 80,
+    "stock": 300,
+    "isPremium": false,
+    "badge": "Nuevo",
+    "image": "https://alcopalet.com/wp-content/uploads/2023/03/WholesaleBeerBottles.com-return-pallet-2.png",
+    "createdAt": "2026-04-07T04:25:32.732Z",
+    "updatedAt": "2026-04-07T04:37:18.823Z"
+  },
+  {
+    "id": 6,
+    "sku": "AURA-0006",
+    "name": "Oreo Menta",
+    "description": "Galleta con sabor a Menta",
+    "category": "Home",
+    "price": 5,
+    "stock": 200,
+    "isPremium": false,
+    "badge": "Nuevo",
+    "image": "https://via.placeholder.com/500x400?text=Product",
+    "createdAt": "2026-04-11T23:58:09.045Z"
+  }
+]

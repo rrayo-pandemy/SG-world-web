@@ -1,0 +1,250 @@
+﻿<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+     PRODUCT DETAIL PAGE - AuraMarket
+     PÃ¡gina de detalle individual de producto con recomendaciones cruzadas
+     â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Detalle del producto - AuraMarket">
+    <meta name="theme-color" content="#0b3c5d">
+    <script>
+        (function () {
+            try {
+                var savedTheme = localStorage.getItem('theme');
+                if (savedTheme === 'light' || savedTheme === 'dark') {
+                    document.documentElement.setAttribute('data-theme', savedTheme);
+                }
+            } catch (e) {}
+        })();
+    </script>
+    <script>
+        window.API_BASE = window.location.origin;
+        if (window.location.port === '8000') {
+            window.API_BASE = 'http://localhost:5000';
+        }
+    </script>
+    <title>Producto - AuraMarket Premium 2026</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/product-detail.css">
+</head>
+<body>
+    <!-- Header (same as index) -->
+    <header class="header" role="banner">
+        <div class="header__container">
+            <div class="header__logo">
+                <a href="index.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit;">
+                    <svg class="logo-icon" viewBox="0 0 32 32" width="32" height="32">
+                        <circle cx="16" cy="16" r="14" fill="url(#gradient)" opacity="0.9"/>
+                        <path d="M16 6 L22 14 L22 26 L10 26 L10 14 Z" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                        <defs>
+                            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#00d4ff;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#0099cc;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <span class="logo-text">AuraMarket</span>
+                </a>
+            </div>
+
+            <nav class="nav" role="navigation" aria-label="Menú principal">
+                <ul class="nav__list">
+                    <li><a href="http://localhost:8000/" class="nav__link">Inicio</a></li>
+                    <li><a href="http://localhost:8000/#productos" class="nav__link">Productos</a></li>
+                    <li><a href="http://localhost:8000/#como-comprar" class="nav__link">Cómo Comprar</a></li>
+                    <li><a href="http://localhost:8000/#sobre-nosotros" class="nav__link">Sobre Nosotros</a></li>
+                </ul>
+            </nav>
+
+            <div class="header__actions">
+                <button class="theme-toggle" aria-label="Activar modo oscuro" aria-pressed="false" data-theme-glyph="â˜¾" title="Alternar modo oscuro">
+                      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                    <path d="M21 12.79A9 9 0 0111.21 3c0 .34.02.67.05 1A7 7 0 1019 19.74c.33.03.66.05 1 .05z" fill="currentColor"/>
+                    </svg>
+                </button>
+                <button class="cart-toggle" aria-label="Abrir carrito de compras" aria-expanded="false">
+                    <svg class="cart-icon" viewBox="0 0 24 24" width="24" height="24">
+                        <path d="M7 4V2m10 2v-2M1 6h22l-2 12H3L1 6Zm3 14v2m14-2v2" 
+                              stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                    </svg>
+                    <span class="cart-badge" aria-live="polite">0</span>
+                </button>
+            </div>
+
+            <button class="menu-toggle" aria-label="MenÃº mÃ³vil" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main role="main">
+        <!-- Breadcrumb -->
+        <nav aria-label="Migas de pan" class="breadcrumb">
+            <div class="container">
+                <a href="index.html">Inicio</a>
+                <span>/</span>
+                <a href="index.html#productos">CatÃ¡logo</a>
+                <span>/</span>
+                <span id="breadcrumb-product" aria-current="page">Producto</span>
+            </div>
+        </nav>
+
+        <!-- Product Detail Section -->
+        <section class="product-detail">
+            <div class="container">
+                <div class="product-detail__grid">
+                    <!-- Product Images -->
+                    <div class="product-detail__images">
+                        <div class="product-detail__main-image">
+                            <img id="main-image" src="" alt="Imagen principal del producto" loading="lazy">
+                        </div>
+                        <div class="product-detail__thumbnails">
+                            <button class="product-detail__thumbnail active" data-image="0" aria-label="Imagen 1">
+                                <img id="thumb-0" src="" alt="Miniatura 1">
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Product Info -->
+                    <div class="product-detail__content">
+                        <!-- Breadcrumb productName -->
+                        <h1 id="product-name" class="product-detail__title">Cargando...</h1>
+
+                        <!-- Rating -->
+                        <div class="product-detail__rating">
+                            <div class="stars" id="product-rating">
+                                <span class="star">â˜…</span>
+                                <span class="star">â˜…</span>
+                                <span class="star">â˜…</span>
+                                <span class="star">â˜…</span>
+                                <span class="star">â˜…</span>
+                            </div>
+                            <span class="rating-text" id="rating-text">(0 reseÃ±as)</span>
+                        </div>
+
+                        <!-- Price -->
+                        <div class="product-detail__price">
+                            <span class="price-label">Precio:</span>
+                            <span class="price-current" id="product-price">S/. 0.00</span>
+                        </div>
+
+                        <!-- Stock Status -->
+                        <div class="product-detail__stock" id="stock-status">
+                            <span class="stock-label">En stock:</span>
+                            <span class="stock-value" id="stock-count">-</span>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="product-detail__description">
+                            <h2>Descripción</h2>
+                            <p id="product-description">Cargando descripción...</p>
+                        </div>
+
+                        <!-- Add to Cart Section -->
+                        <div class="product-detail__actions">
+                            <div class="quantity-selector">
+                                <label for="quantity">Cantidad:</label>
+                                <div class="quantity-buttons">
+                                    <button class="qty-btn" id="qty-minus" aria-label="Reducir cantidad">-</button>
+                                    <input type="number" id="quantity" value="1" min="1" max="99" aria-label="Cantidad a comprar">
+                                    <button class="qty-btn" id="qty-plus" aria-label="Aumentar cantidad">+</button>
+                                </div>
+                            </div>
+
+                            <button class="btn btn--primary btn--lg" id="btn-add-cart" style="margin-top: 1rem;">
+                                Añadir al Carrito
+                                <span class="btn__arrow">→</span>
+                            </button>
+
+                            <button class="btn-wishlist" id="btn-wishlist" title="Añadir a favoritos">♡</button>
+                        </div>
+
+                        <!-- Product Details -->
+                        <details class="product-detail__specs" open>
+                            <summary>Características técnicas</summary>
+                            <ul id="product-specs">
+                                <li>Cargando características...</li>
+                            </ul>
+                        </details>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recommendations Section -->
+        <section class="product-recommendations">
+            <div class="container">
+                <h2>Productos Relacionados</h2>
+                <div class="products-grid" id="recommendations-grid">
+                    <!-- Cargadas dinÃ¡micamente -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Trust Section -->
+        <section class="trust-section">
+            <div class="trust-container">
+                <div class="trust-item scroll-reveal">
+                    <div class="trust-icon">ðŸ”’</div>
+                    <h3>100% Seguro</h3>
+                    <p>Transacciones cifradas con HTTPS</p>
+                </div>
+                <div class="trust-item scroll-reveal">
+                    <div class="trust-icon">âœ“</div>
+                    <h3>Garantía</h3>
+                    <p>Devolución en 30 días sin preguntas</p>
+                </div>
+                <div class="trust-item scroll-reveal">
+                    <div class="trust-icon">âš¡</div>
+                    <h3>Entrega Rápida</h3>
+                    <p>Envío en 2-3 días hábiles</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer (mismo que index) -->
+    <footer class="footer" role="contentinfo">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>AuraMarket</h4>
+                <p>Tienda online de productos curados y premium.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Enlaces</h4>
+                <ul>
+                    <li><a href="index.html">Inicio</a></li>
+                    <li><a href="index.html#productos">Catálogo</a></li>
+                    <li><a href="#">Políticas</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Contacto</h4>
+                <p>ðŸ“§ info@auramarket.com</p>
+                <p>ðŸ“± +34 600 000 000</p>
+            </div>
+            <div class="footer-section">
+                <h4>Seguridad</h4>
+                <p>âœ“ ISO 27001 (Seguridad de InformaciÃ³n)</p>
+                <p>âœ“ PCI-DSS Compliant</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 AuraMarket. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/theme-manager.js"></script>
+    <script src="js/animations.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/product-detail.js"></script>
+</body>
+</html>
+
