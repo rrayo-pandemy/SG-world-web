@@ -1,7 +1,7 @@
-﻿const API_BASE = window.API_BASE || 'http://localhost:5000';
+const API_BASE = window.API_BASE || 'http://localhost:5000';
 
 const state = {
-  token: localStorage.getItem('authToken') || '',
+  token: localStorage.getItem('adminAuthToken') || '',
   currentUser: null,
   users: [],
   products: [],
@@ -132,9 +132,9 @@ function setAuthenticatedUI(isAuthenticated) {
 function persistToken(token) {
   state.token = token || '';
   if (state.token) {
-    localStorage.setItem('authToken', state.token);
+    localStorage.setItem('adminAuthToken', state.token);
   } else {
-    localStorage.removeItem('authToken');
+    localStorage.removeItem('adminAuthToken');
   }
 }
 
@@ -433,7 +433,7 @@ async function createProduct(event) {
   clearCreateProductForm();
   notify('Producto agregado');
   try {
-    localStorage.setItem('auramarket_products_updated_at', String(Date.now()));
+    localStorage.setItem('ElRinconAzul_products_updated_at', String(Date.now()));
   } catch {
     // ignore
   }
@@ -498,7 +498,7 @@ async function updateProduct(event) {
   clearProductEditForm();
   notify('Producto actualizado');
   try {
-    localStorage.setItem('auramarket_products_updated_at', String(Date.now()));
+    localStorage.setItem('ElRinconAzul_products_updated_at', String(Date.now()));
   } catch {
     // ignore
   }

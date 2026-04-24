@@ -1,5 +1,5 @@
-﻿/* ============================================
-   AURAMARKET FRONTEND APP
+/* ============================================
+   ElRinconAzul FRONTEND APP
    ============================================ */
 
 const APP_PRODUCTS = [
@@ -85,7 +85,7 @@ const APP_PRODUCTS = [
   },
 ];
 
-const PRODUCTS_SYNC_KEY = 'auramarket_products_updated_at';
+const PRODUCTS_SYNC_KEY = 'ElRinconAzul_products_updated_at';
 
 function safeCurrency(value) {
   if (typeof formatCurrency === 'function') return formatCurrency(value);
@@ -144,9 +144,10 @@ class ProductManager {
       addCandidate(window.API_BASE);
     }
 
+    if (window.location.port === '8000') {
+      addCandidate(window.location.protocol + '//' + window.location.hostname + ':5000');
+    }
     addCandidate('');
-    addCandidate('http://localhost:5000');
-    addCandidate('http://localhost:3000');
     return candidates;
   }
 
@@ -310,7 +311,20 @@ class Navigation {
     this.nav = document.querySelector('.nav');
     this.dropdownToggle = document.querySelector('.nav__item--dropdown > .nav__link');
     this.dropdownItem = document.querySelector('.nav__item--dropdown');
+    this.hoverMediaQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
     this.init();
+  }
+
+  isDesktopHoverMode() {
+    return Boolean(this.hoverMediaQuery && this.hoverMediaQuery.matches);
+  }
+
+  setDropdownOpen(isOpen) {
+    if (!this.dropdownItem) return;
+    this.dropdownItem.classList.toggle('active', Boolean(isOpen));
+    if (this.dropdownToggle) {
+      this.dropdownToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
   }
 
   init() {
@@ -324,15 +338,32 @@ class Navigation {
 
     if (this.dropdownToggle && this.dropdownItem) {
       this.dropdownToggle.addEventListener('click', (event) => {
-        event.preventDefault();
-        this.dropdownItem.classList.toggle('active');
+        if (!this.isDesktopHoverMode()) {
+          event.preventDefault();
+          const willOpen = !this.dropdownItem.classList.contains('active');
+          this.setDropdownOpen(willOpen);
+        } else {
+          this.setDropdownOpen(false);
+        }
+      });
+
+      this.dropdownItem.addEventListener('mouseenter', () => {
+        if (this.isDesktopHoverMode()) this.setDropdownOpen(true);
+      });
+
+      this.dropdownItem.addEventListener('mouseleave', () => {
+        if (this.isDesktopHoverMode()) this.setDropdownOpen(false);
       });
 
       document.addEventListener('click', (event) => {
         if (!this.dropdownItem.contains(event.target)) {
-          this.dropdownItem.classList.remove('active');
+          this.setDropdownOpen(false);
         }
       });
+
+      if (this.hoverMediaQuery && typeof this.hoverMediaQuery.addEventListener === 'function') {
+        this.hoverMediaQuery.addEventListener('change', () => this.setDropdownOpen(false));
+      }
     }
   }
 }
@@ -349,6 +380,12 @@ class CTAHandler {
     document.querySelectorAll('[data-action="continue-shopping"]').forEach((btn) => {
       btn.addEventListener('click', () => {
         if (window.cartManager) cartManager.closeSidebar();
+        const productosSection = document.getElementById('productos');
+        if (productosSection) {
+          setTimeout(() => {
+            productosSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 300);
+        }
       });
     });
 
@@ -468,6 +505,10 @@ class PremiumLogin {
   }
 
   open() {
+    if (window.sessionManager && typeof window.sessionManager.isAuthenticated === 'function' && window.sessionManager.isAuthenticated()) {
+      return;
+    }
+
     this.modal.classList.add('open');
     this.modal.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
@@ -489,7 +530,7 @@ class PremiumLogin {
       return;
     }
 
-    const API_BASE = window.API_BASE || 'http://localhost:5000';
+    const API_BASE = window.API_BASE || (window.location.port === '8000' ? (window.location.protocol + '//' + window.location.hostname + ':5000') : '');
 
     try {
       this.showMessage('Validando acceso...', 'success');
@@ -506,13 +547,17 @@ class PremiumLogin {
       }
 
       const isPremium = Boolean(data.user?.isPremium) || data.user?.role === 'admin';
-      localStorage.setItem('premiumLogged', isPremium ? 'true' : 'false');
-      localStorage.setItem('normalLogged', isPremium ? 'false' : 'true');
-      if (data.token) {
-        localStorage.setItem('authToken', data.token);
-      }
-      if (data.user?.email) {
-        localStorage.setItem('userEmail', data.user.email);
+      if (window.sessionManager && typeof window.sessionManager.handleAuthSuccess === 'function') {
+        await window.sessionManager.handleAuthSuccess(data.user, data.token);
+      } else {
+        localStorage.setItem('premiumLogged', isPremium ? 'true' : 'false');
+        localStorage.setItem('normalLogged', isPremium ? 'false' : 'true');
+        if (data.token) {
+          localStorage.setItem('authToken', data.token);
+        }
+        if (data.user?.email) {
+          localStorage.setItem('userEmail', data.user.email);
+        }
       }
 
       this.showMessage(isPremium ? 'Acceso premium concedido.' : 'Acceso de cliente activado.', 'success');
@@ -602,7 +647,7 @@ class SignupModal {
       return;
     }
 
-    const API_BASE = window.API_BASE || 'http://localhost:5000';
+    const API_BASE = window.API_BASE || (window.location.port === '8000' ? (window.location.protocol + '//' + window.location.hostname + ':5000') : '');
     try {
       const response = await fetch(`${API_BASE}/api/v1/auth/register`, {
         method: 'POST',
@@ -616,13 +661,17 @@ class SignupModal {
         return;
       }
 
-      localStorage.setItem('normalLogged', 'true');
-      localStorage.setItem('premiumLogged', 'false');
-      localStorage.setItem('userEmail', email);
-      if (data.token) {
-        localStorage.setItem('authToken', data.token);
+      if (window.sessionManager && typeof window.sessionManager.handleAuthSuccess === 'function') {
+        await window.sessionManager.handleAuthSuccess(data.user, data.token);
+      } else {
+        localStorage.setItem('normalLogged', 'true');
+        localStorage.setItem('premiumLogged', 'false');
+        localStorage.setItem('userEmail', email);
+        if (data.token) {
+          localStorage.setItem('authToken', data.token);
+        }
       }
-      this.showMessage('Cuenta creada correctamente. Ya puedes iniciar sesion.', 'success');
+      this.showMessage('Cuenta creada correctamente. Sesion iniciada.', 'success');
       setTimeout(() => this.close(), 700);
     } catch (error) {
       this.showMessage('No se pudo conectar con la API.', 'error');
@@ -643,7 +692,15 @@ function setupWishlist() {
 
     event.preventDefault();
     button.classList.toggle('active');
-    button.textContent = button.classList.contains('active') ? '♥' : '♡';
+    
+    const heart = button.querySelector('.heart');
+    const icon = button.classList.contains('active') ? '♥' : '♡';
+    
+    if (heart) {
+      heart.textContent = icon;
+    } else {
+      button.textContent = icon;
+    }
   });
 }
 

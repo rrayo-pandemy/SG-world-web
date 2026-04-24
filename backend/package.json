@@ -1,20 +1,21 @@
-﻿{
-  "name": "auramarket-backend",
+{
+  "name": "ElRinconAzul-backend",
   "version": "2.0.0",
-  "description": "Backend API modular y seguro para tienda virtual AuraMarket",
+  "description": "Backend API modular y seguro para tienda virtual ElRinconAzul",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "test": "jest --runInBand"
   },
   "keywords": [
     "ecommerce",
     "api",
     "express",
     "security",
-    "auramarket"
+    "ElRinconAzul"
   ],
-  "author": "AuraMarket",
+  "author": "ElRinconAzul",
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0",
@@ -30,5 +31,9 @@
     "helmet": "^7.0.0",
     "jsonwebtoken": "^9.0.0",
     "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "jest": "^30.0.0",
+    "supertest": "^7.0.0"
   }
 }

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * PRODUCT DETAIL PAGE - JavaScript
  * Handles product detail, recommendations, cart actions, and admin editing.
  */
@@ -8,10 +8,12 @@ class ProductDetailManager {
         this.productId = this.getProductIdFromURL();
         this.products = [];
         this.currentProduct = null;
+        this.reviews = [];
         this.quantity = 1;
         this.apiBase = '';
         this.apiAvailable = false;
         this.isAdminSession = this.hasAdminRole();
+        this.isUserAuthenticated = this.isAuthenticated();
         this.init();
     }
 
@@ -71,6 +73,33 @@ class ProductDetailManager {
         }
     }
 
+    isAuthenticated() {
+        return !!localStorage.getItem('authToken');
+    }
+
+    getUserInfo() {
+        // Intentar obtener datos del sessionManager global primero
+        if (window.sessionManager && typeof window.sessionManager.getCurrentUser === 'function') {
+            const user = window.sessionManager.getCurrentUser();
+            if (user) return { id: user.id, name: user.name, email: user.email };
+        }
+
+        // Fallback a localStorage si el sessionManager no está listo
+        try {
+            const storedUser = JSON.parse(localStorage.getItem('ElRinconAzul_current_user') || 'null');
+            if (storedUser) return { id: storedUser.id, name: storedUser.name, email: storedUser.email };
+        } catch (e) {}
+
+        const token = this.getAuthToken();
+        if (!token) return { name: 'Invitado' };
+        
+        return {
+            id: 0,
+            name: localStorage.getItem('userEmail')?.split('@')[0] || 'Usuario',
+            email: localStorage.getItem('userEmail') || ''
+        };
+    }
+
     hasAdminRole() {
         const token = this.getAuthToken();
         if (!token) return false;
@@ -84,7 +113,9 @@ class ProductDetailManager {
             await this.loadProducts();
             await this.detectAdminSession();
             this.loadProductDetail();
+            this.loadReviews();
             this.setupEventListeners();
+            this.setupReviewForm();
         } catch (error) {
             console.error('Error initializing ProductDetailManager:', error);
         }
@@ -221,7 +252,7 @@ class ProductDetailManager {
             return;
         }
 
-        document.title = `${this.currentProduct.name} - AuraMarket`;
+        document.title = `${this.currentProduct.name} - ElRinconAzul`;
         document.getElementById('breadcrumb-product').textContent = this.currentProduct.name;
         document.getElementById('main-image').src = this.currentProduct.image;
         document.getElementById('thumb-0').src = this.currentProduct.image;
@@ -238,6 +269,217 @@ class ProductDetailManager {
         this.renderAdminEditor();
 
         console.log(`Product page loaded: ${this.currentProduct.name} (ID:${this.productId})`);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // REVIEWS MANAGEMENT
+    // ════════════════════════════════════════════════════════════════════════════
+
+    async loadReviews() {
+        try {
+            const response = await fetch(this.buildApiUrl(`/api/v1/reviews/${this.productId}`));
+            if (!response.ok) throw new Error('Error al cargar reseñas');
+            
+            const data = await response.json();
+            this.reviews = data.data || [];
+            this.renderReviews();
+            this.updateRatingSummary();
+        } catch (error) {
+            console.error('Error loading reviews:', error);
+            // Fallback a localStorage si el servidor falla (opcional, pero mejor centralizado)
+            this.renderReviews();
+        }
+    }
+
+    // Ya no usamos saveReviews() localmente, el servidor se encarga.
+    saveReviews() {
+        // Obsoleto: las reseñas ahora son centralizadas.
+    }
+
+    renderReviews() {
+        const listContainer = document.getElementById('reviews-list');
+        if (!listContainer) return;
+
+        if (this.reviews.length === 0) {
+            listContainer.innerHTML = '<p class="no-reviews">Aún no hay reseñas para este producto. ¡Sé el primero en calificarlo!</p>';
+            return;
+        }
+
+        listContainer.innerHTML = this.reviews
+            .sort((a, b) => new Date(b.date) - new Date(a.date))
+            .map(review => `
+                <div class="review-item" id="review-${review.id}">
+                    <div class="review-meta">
+                        <div class="review-author">
+                            <span class="review-user">${review.userName}</span>
+                            ${review.userRole === 'admin' ? '<span class="admin-badge">Moderador</span>' : ''}
+                        </div>
+                        <span class="review-date">${new Date(review.date).toLocaleDateString()}</span>
+                    </div>
+                    <div class="review-stars stars">
+                        ${this.generateStarsHTML(review.rating)}
+                    </div>
+                    <p class="review-comment">${review.comment}</p>
+                    ${this.isAdminSession ? `
+                        <div class="admin-review-actions">
+                            <button class="btn-delete-review" onclick="productDetail.deleteReview(${review.id})">
+                                <span class="icon">🗑</span> Eliminar Comentario
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+    }
+
+    generateStarsHTML(rating, total = 5) {
+        let html = '';
+        for (let i = 1; i <= total; i++) {
+            html += i <= Math.round(rating) ? '<span class="star active">★</span>' : '<span class="star">☆</span>';
+        }
+        return html;
+    }
+
+    updateRatingSummary() {
+        const avgStarsContainer = document.getElementById('avg-rating-stars');
+        const avgValueEl = document.getElementById('avg-rating-value');
+        const countEl = document.getElementById('total-reviews-count');
+        const mainRatingStars = document.getElementById('product-rating');
+        const mainRatingText = document.getElementById('rating-text');
+
+        if (this.reviews.length === 0) {
+            const emptyStars = this.generateStarsHTML(0);
+            if (avgStarsContainer) avgStarsContainer.innerHTML = emptyStars;
+            if (avgValueEl) avgValueEl.textContent = '0.0';
+            if (countEl) countEl.textContent = '(0 reseñas)';
+            if (mainRatingStars) mainRatingStars.innerHTML = emptyStars;
+            if (mainRatingText) mainRatingText.textContent = '(0 reseñas)';
+            return;
+        }
+
+        const totalRating = this.reviews.reduce((acc, rev) => acc + rev.rating, 0);
+        const avgRating = totalRating / this.reviews.length;
+
+        const starsHTML = this.generateStarsHTML(avgRating);
+        
+        if (avgStarsContainer) avgStarsContainer.innerHTML = starsHTML;
+        if (avgValueEl) avgValueEl.textContent = avgRating.toFixed(1);
+        if (countEl) countEl.textContent = `(${this.reviews.length} reseñas)`;
+        
+        if (mainRatingStars) mainRatingStars.innerHTML = starsHTML;
+        if (mainRatingText) mainRatingText.textContent = `${avgRating.toFixed(1)} (${this.reviews.length} reseñas)`;
+    }
+
+    setupReviewForm() {
+        const authContainer = document.getElementById('review-form-auth');
+        const guestContainer = document.getElementById('review-form-guest');
+        const form = document.getElementById('review-form');
+
+        // Usar el SessionManager global si está disponible, de lo contrario usar localStorage directamente
+        let authenticated = false;
+        if (window.sessionManager && typeof window.sessionManager.isAuthenticated === 'function') {
+            authenticated = window.sessionManager.isAuthenticated();
+        } else {
+            authenticated = this.isAuthenticated();
+        }
+
+        if (authContainer) authContainer.hidden = !authenticated;
+        if (guestContainer) guestContainer.hidden = authenticated;
+
+        if (form && !form.dataset.bound) {
+            form.addEventListener('submit', (e) => this.handleReviewSubmit(e));
+            form.dataset.bound = 'true';
+        }
+    }
+
+    async handleReviewSubmit(e) {
+        e.preventDefault();
+        const statusEl = document.getElementById('review-form-status');
+        const form = e.target;
+        const rating = parseInt(form.querySelector('input[name="rating"]:checked')?.value || 0);
+        const comment = document.getElementById('review-comment').value.trim();
+
+        if (rating === 0 || !comment) {
+            this.setReviewStatus('Por favor selecciona una calificación y escribe un comentario.', 'error');
+            return;
+        }
+
+        const userInfo = this.getUserInfo();
+        
+        const newReview = {
+            id: Date.now(),
+            userId: userInfo.id,
+            userName: userInfo.name,
+            rating: rating,
+            comment: comment,
+            date: new Date().toISOString()
+        };
+
+        this.setReviewStatus('Publicando...', '');
+        
+        try {
+            const response = await fetch(this.buildApiUrl('/api/v1/reviews'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...this.getAuthHeaders()
+                },
+                body: JSON.stringify({
+                    productId: this.productId,
+                    rating: rating,
+                    comment: comment
+                })
+            });
+
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || 'Error al publicar reseña');
+
+            this.reviews.push(data.data);
+            this.renderReviews();
+            this.updateRatingSummary();
+            
+            form.reset();
+            this.setReviewStatus('¡Gracias por tu reseña!', 'success');
+            
+            setTimeout(() => {
+                if (statusEl) statusEl.textContent = '';
+            }, 3000);
+        } catch (error) {
+            this.setReviewStatus(error.message, 'error');
+        }
+    }
+
+    async deleteReview(reviewId) {
+        if (!confirm('¿Estás seguro de que deseas eliminar este comentario?')) return;
+
+        try {
+            const response = await fetch(this.buildApiUrl(`/api/v1/reviews/${reviewId}`), {
+                method: 'DELETE',
+                headers: {
+                    ...this.getAuthHeaders()
+                }
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.message || 'Error al eliminar');
+            }
+
+            // Eliminar del array local y re-renderizar
+            this.reviews = this.reviews.filter(r => r.id !== reviewId);
+            this.renderReviews();
+            this.updateRatingSummary();
+            
+            console.log(`Review ${reviewId} deleted by admin`);
+        } catch (error) {
+            alert('Error al eliminar la reseña: ' + error.message);
+        }
+    }
+
+    setReviewStatus(message, type = '') {
+        const statusEl = document.getElementById('review-form-status');
+        if (!statusEl) return;
+        statusEl.textContent = message;
+        statusEl.className = `form-status ${type}`;
     }
 
     renderRating(rating, reviews) {
@@ -335,7 +577,11 @@ class ProductDetailManager {
         }
 
         if (addCartBtn) addCartBtn.addEventListener('click', () => this.addToCart());
-        if (wishlistBtn) wishlistBtn.addEventListener('click', (event) => this.toggleWishlist(event));
+
+        // Escuchar cambios de sesión para desbloquear el formulario de reseñas dinámicamente
+        document.addEventListener('ElRinconAzul:session-changed', () => {
+            this.setupReviewForm();
+        });
     }
 
     changeQuantity(change) {
@@ -345,13 +591,26 @@ class ProductDetailManager {
     }
 
     addToCart() {
-        if (!window.cartManager) {
+        const qtyInput = document.getElementById('quantity');
+        if (qtyInput) {
+            this.quantity = parseInt(qtyInput.value, 10) || 1;
+        }
+
+        const manager = window.cartManager;
+        
+        if (!manager) {
             console.error('CartManager unavailable');
             return;
         }
 
+        if (!this.currentProduct) {
+            console.error('No product loaded');
+            return;
+        }
+
+        // Add to cart N times based on quantity
         for (let i = 0; i < this.quantity; i++) {
-            cartManager.addToCart(this.currentProduct.id);
+            manager.addToCart(this.currentProduct.id);
         }
 
         const btn = document.getElementById('btn-add-cart');
@@ -372,16 +631,9 @@ class ProductDetailManager {
         cartManager.addToCart(productId);
     }
 
-    toggleWishlist(event) {
-        event.preventDefault();
-        const btn = event.target.closest('.btn-wishlist');
-        if (!btn) return;
 
-        btn.classList.toggle('active');
-        btn.textContent = btn.classList.contains('active') ? '♥' : '♡';
-    }
 
-    
+
     renderAdminEditor() {
         const editor = document.getElementById('admin-product-editor');
         if (!editor) return;
@@ -507,4 +759,5 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     productDetail = new ProductDetailManager();
+    window.productDetail = productDetail;
 });

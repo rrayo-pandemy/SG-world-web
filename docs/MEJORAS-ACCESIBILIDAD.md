@@ -1,6 +1,6 @@
 <!-- 
   ╔════════════════════════════════════════════════════════════╗
-  ║     AuraMarket - Mejoras Recomendadas para Frontend       ║
+  ║     ElRinconAzul - Mejoras Recomendadas para Frontend       ║
   ║     Implementación de WCAG 2.1 AA + Accesibilidad         ║
   ╚════════════════════════════════════════════════════════════╝
 -->
@@ -268,8 +268,7 @@
                 class="btn-add-cart"
                 onclick="cartManager.addToCart(1)"
                 aria-label="Añadir Aurinium Pro 2026 al carrito"
-            >
-                Añadir al Carrito
+            >Añadir al Carrito
             </button>
             
             <button 

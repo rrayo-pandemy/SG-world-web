@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# 🔐 AuraMarket Security & Quality Verification Script
+# 🔐 ElRinconAzul Security & Quality Verification Script
 # Ejecutar antes de deployar a producción
 
 echo "
 ████████████████████████████████████████████████████████
 █                                                      █
-█  🔐 AURAMARKET SECURITY VERIFICATION 2026          █
+█  🔐 ElRinconAzul SECURITY VERIFICATION 2026          █
 █                                                      █
 ████████████████████████████████████████████████████████
 "

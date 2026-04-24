@@ -1,4 +1,4 @@
-# 🌟 AuraMarket - Tienda Online Premium 2026-2027
+# 🌟 ElRinconAzul - Tienda Online Premium 2026-2027
 
 > **Plataforma de ecommerce moderna, segura y escalable. Producción-lista con cumplimiento ISO 9001 y WCAG 2.1 AA.**
 
@@ -58,8 +58,8 @@ cp .env.example .env
 npm run dev
 # Output: ✅ Server running on localhost:5000
 
-# 5. En otra terminal, servir frontend
-cd ../frontend
+# 5. En otra terminal, entrar en frontend
+cd D:\tienda_virtual\frontend
 python -m http.server 8000
 # O usar: npx http-server . -p 8000
 
@@ -264,7 +264,7 @@ curl -H "Authorization: Bearer invalid" http://localhost:5000/api/orders
    - Testing de funcionalidades
    - Troubleshooting
 
-4. **[04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md)** *(próximo)*
+4. **[04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md)**
    - Deploy a producción
    - Opciones de hosting
    - CI/CD con GitHub Actions
@@ -342,7 +342,7 @@ MIT - Libre para uso comercial
 
 ## 📞 Soporte
 
-- **Email**: dev@auramarket.com
+- **Email**: dev@elrinconazul.com
 - **Issues**: GitHub Issues (próximamente)
 - **Docs**: Ver carpeta `/docs`
 

@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "userId": 1,
+    "items": [],
+    "updatedAt": "2026-04-18T07:00:06.724Z"
+  },
+  {
+    "userId": 2,
+    "items": [
+      {
+        "productId": 2,
+        "quantity": 1
+      }
+    ],
+    "updatedAt": "2026-04-17T19:21:16.211Z"
+  }
+]

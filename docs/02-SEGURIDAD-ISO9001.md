@@ -63,7 +63,7 @@ const generateSecureToken = (user) => {
         secure: true,          // ✅ Solo HTTPS
         sameSite: 'Strict',    // ✅ Previene CSRF
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
-        domain: 'auramarket.com' // ✅ Dominio específico
+        domain: 'ElRinconAzul.com' // ✅ Dominio específico
     });
     
     return { token, user };
@@ -235,7 +235,7 @@ res.cookie('authToken', token, {
 //    → Request falla (sin token válido)
 
 // Ejemplo de ataque CSRF BLOQUEADO:
-// Atacante sitio: <img src="https://auramarket.com/api/transfer?amount=999">
+// Atacante sitio: <img src="https://ElRinconAzul.com/api/transfer?amount=999">
 // Cookie NO se envía porque SameSite=Strict
 // Resultado: 401 Unauthorized
 ```
@@ -382,25 +382,25 @@ app.get('/admin/metrics', requireRole('admin'), (req, res) => {
 
 ```bash
 # 1. Test XSS
-curl -X POST https://auramarket.com/api/register \
+curl -X POST https://ElRinconAzul.com/api/register \
   -H "Content-Type: application/json" \
   -d '{"email":"<script>alert(1)</script>@test.com"}'
 # Esperado: 400 Bad Request (validación)
 
 # 2. Test SQL Injection
-curl -X POST https://auramarket.com/api/login \
+curl -X POST https://ElRinconAzul.com/api/login \
   -H "Content-Type: application/json" \
   -d '{"email":"admin\" OR \"1\"=\"1", "password":": anything"}'
 # Esperado: 400 Bad Request + Mongoose parameterized query bloqueará
 
 # 3. Test Rate Limiting
 for i in {1..101}; do
-  curl https://auramarket.com/api/products
+  curl https://ElRinconAzul.com/api/products
 done
 # Esperado: Después de 100 requests → 429 Too Many Requests
 
 # 4. Test HTTPS Enforcement
-curl -I http://auramarket.com
+curl -I http://ElRinconAzul.com
 # Esperado: 308 Permanent Redirect a HTTPS + HSTS header
 ```
 

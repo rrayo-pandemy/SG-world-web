@@ -1,4 +1,4 @@
-﻿const path = require('path');
+const path = require('path');
 const bcrypt = require('bcryptjs');
 const { ensureDir, ensureFile, readJson, writeJson } = require('../utils/fileDb');
 
@@ -7,6 +7,7 @@ const usersFile = path.join(dataDir, 'users.json');
 const productsFile = path.join(dataDir, 'products.json');
 const cartsFile = path.join(dataDir, 'carts.json');
 const ordersFile = path.join(dataDir, 'orders.json');
+const reviewsFile = path.join(dataDir, 'reviews.json');
 
 function bootstrapData() {
   ensureDir(dataDir);
@@ -17,8 +18,8 @@ function bootstrapData() {
   ensureFile(usersFile, [
     {
       id: 1,
-      name: 'Admin AuraMarket',
-      email: 'admin@auramarket.com',
+      name: 'Admin ElRinconAzul',
+      email: 'admin@elrinconazul.com',
       passwordHash: adminPassword,
       role: 'admin',
       createdAt: new Date().toISOString(),
@@ -26,7 +27,7 @@ function bootstrapData() {
     {
       id: 2,
       name: 'Cliente Demo',
-      email: 'cliente@auramarket.com',
+      email: 'cliente@elrinconazul.com',
       passwordHash: customerPassword,
       role: 'customer',
       createdAt: new Date().toISOString(),
@@ -90,6 +91,7 @@ function bootstrapData() {
 
   ensureFile(cartsFile, []);
   ensureFile(ordersFile, []);
+  ensureFile(reviewsFile, []);
 }
 
 function getUsers() {
@@ -134,4 +136,14 @@ module.exports = {
   saveCarts,
   getOrders,
   saveOrders,
+  getReviews,
+  saveReviews,
 };
+
+function getReviews() {
+  return readJson(reviewsFile);
+}
+
+function saveReviews(payload) {
+  writeJson(reviewsFile, payload);
+}

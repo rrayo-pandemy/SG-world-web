@@ -1,6 +1,6 @@
-﻿=============================================
+=============================================
 INSTALACION DEL BACKEND - GUIA ACTUALIZADA
-Proyecto: AuraMarket
+Proyecto: ElRinconAzul
 Actualizado: 2026-04-06
 =============================================
 
@@ -69,7 +69,7 @@ PASO 7 - ABRIR LA APLICACION
 
 NOTA DE LOGIN ADMIN
 Usuario admin inicial (si no fue modificado):
-- Email: admin@auramarket.com
+- Email: admin@elrinconazul.com
 - Password: Admin1234
 
 COMANDOS RAPIDOS (RESUMEN)

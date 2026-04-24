@@ -1,0 +1,6 @@
+node_modules
+npm-debug.log
+python_server*.log
+__pycache__
+.env
+

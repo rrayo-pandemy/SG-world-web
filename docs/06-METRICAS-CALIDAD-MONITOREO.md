@@ -7,7 +7,7 @@
 
 ## 1. Introducción
 
-Las métricas de calidad permiten **medir, monitorear y mejorar** el rendimiento, confiabilidad y seguridad de AuraMarket.
+Las métricas de calidad permiten **medir, monitorear y mejorar** el rendimiento, confiabilidad y seguridad de ElRinconAzul.
 
 ```
 SIN MÉTRICAS:           CON MÉTRICAS:
@@ -42,7 +42,7 @@ Tier            Uptime    Downtime/mes
 Básico          99.0%     ~7 horas
 Profesional     99.5%     ~3.5 horas
 Enterprise      99.95%    ~22 minutos
-AuraMarket      99.95%    <22 min/mes
+ElRinconAzul      99.95%    <22 min/mes
 ```
 
 **Implementar:**
@@ -160,7 +160,7 @@ app.use((req, res, next) => {
 });
 ```
 
-**SLA de Rendimiento - AuraMarket:**
+**SLA de Rendimiento - ElRinconAzul:**
 
 ```
 Endpoint                    P50         P95         P99
@@ -248,7 +248,7 @@ app.post('/api/v1/cart/abandon', async (req, res) => {
 });
 ```
 
-**Benchmarks - AuraMarket:**
+**Benchmarks - ElRinconAzul:**
 
 ```
 Métrica                     Actual      Target      Tendencia
@@ -360,7 +360,7 @@ app.post('/api/v1/user/change-password', authenticateJWT, async (req, res) => {
 });
 ```
 
-**Benchmarks - AuraMarket:**
+**Benchmarks - ElRinconAzul:**
 
 ```
 Métrica                              Target
@@ -390,7 +390,7 @@ datadogRum.init({
     applicationId: process.env.DATADOG_APP_ID,
     clientToken: process.env.DATADOG_CLIENT_TOKEN,
     site: 'datadoghq.com',
-    service: 'auramarket-frontend',
+    service: 'ElRinconAzul-frontend',
     env: process.env.NODE_ENV,
     version: '2.0.0',
     sessionSampleRate: 100,
@@ -614,12 +614,12 @@ Database Query Times:
 **Detección:** Alert crítico en Datadog
 
 **Pasos inmediatos (0-5 min):**
-1. Confirmar: `curl https://api.auramarket.com/health`
+1. Confirmar: `curl https://api.ElRinconAzul.com/health`
 2. Slack: Notificar #incidents
 3. Check: Status de servidores en AWS
 
 **Diagnosticar (5-15 min):**
-1. Revisar logs: `tail -f /var/log/auramarket/error.log`
+1. Revisar logs: `tail -f /var/log/ElRinconAzul/error.log`
 2. Métricas de servidor: CPU, memoria, disco
 3. Conexión DB: ¿Está respondiendo?
 4. Errores recientes en Datadog
@@ -631,9 +631,9 @@ Database Query Times:
 - Si conectividad: Verificar firewall/DNS
 
 **Comunicar:**
-- Actualizar status.auramarket.com
+- Actualizar status.elrinconazul.com
 - Email a customers
-- Tweet en @AuraMarketApp
+- Tweet en @elrinconazulapp
 
 **Post-mortem:** Crear ticket JIRA
 
@@ -701,7 +701,7 @@ DOCUMENTACIÓN:
 Sin datos, trabajas con suposiciones.  
 Con datos, trabajas con evidencia.
 
-AuraMarket implementará:
+ElRinconAzul implementará:
 - ✅ Monitoreo de confiabilidad (99.95% uptime)
 - ✅ Métricas de rendimiento (P95 < 200ms)
 - ✅ KPIs de negocio (conversión, AOV, LTV)

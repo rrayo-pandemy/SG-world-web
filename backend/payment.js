@@ -34,14 +34,14 @@ const TEST_CARDS = {
  * Procesar pago simulado
  */
 class PaymentSimulator {
-    
+
     /**
      * Validar número de tarjeta (Luhn algorithm)
      */
     static validateCardNumber(cardNumber) {
         const digits = cardNumber.replace(/\D/g, '');
         if (digits.length !== 16) return false;
-        
+
         let sum = 0;
         for (let i = 0; i < digits.length; i++) {
             let digit = parseInt(digits[i]);
@@ -51,10 +51,10 @@ class PaymentSimulator {
             }
             sum += digit;
         }
-        
+
         return sum % 10 === 0;
     }
-    
+
     /**
      * Validar expiración
      */
@@ -63,21 +63,21 @@ class PaymentSimulator {
         const expiry = new Date(year, month, 0); // Último día del mes
         return expiry > now;
     }
-    
+
     /**
      * Validar CVV (3-4 dígitos)
      */
     static validateCVV(cvv) {
         return /^\d{3,4}$/.test(cvv);
     }
-    
+
     /**
      * Generar Transaction ID
      */
     static generateTransactionId() {
         return `TXN_${Date.now()}_${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
     }
-    
+
     /**
      * Procesar pago
      * 
@@ -95,7 +95,7 @@ class PaymentSimulator {
     static async processPayment(paymentData) {
         const txnId = this.generateTransactionId();
         const timestamp = new Date();
-        
+
         // Logging inicial
         logger.info('PAYMENT_ATTEMPT', {
             transactionId: txnId,
@@ -105,16 +105,16 @@ class PaymentSimulator {
             cardLast4: paymentData.cardNumber.slice(-4),
             email: paymentData.email
         });
-        
+
         try {
             // 1. VALIDACIONES BÁSICAS
             // ========================
-            
+
             // Validar monto
             if (!paymentData.amount || paymentData.amount <= 0) {
-                logger.warn('PAYMENT_INVALID_AMOUNT', { 
-                    amount: paymentData.amount, 
-                    txnId 
+                logger.warn('PAYMENT_INVALID_AMOUNT', {
+                    amount: paymentData.amount,
+                    txnId
                 });
                 return {
                     success: false,
@@ -123,7 +123,7 @@ class PaymentSimulator {
                     transactionId: txnId
                 };
             }
-            
+
             // Validar tarjeta
             if (!this.validateCardNumber(paymentData.cardNumber)) {
                 logger.warn('PAYMENT_INVALID_CARD', { txnId });
@@ -134,7 +134,7 @@ class PaymentSimulator {
                     transactionId: txnId
                 };
             }
-            
+
             // Validar expiración
             if (!this.validateExpiry(paymentData.expMonth, paymentData.expYear)) {
                 logger.warn('PAYMENT_EXPIRED_CARD', { txnId });
@@ -145,7 +145,7 @@ class PaymentSimulator {
                     transactionId: txnId
                 };
             }
-            
+
             // Validar CVV
             if (!this.validateCVV(paymentData.cvv)) {
                 logger.warn('PAYMENT_INVALID_CVV', { txnId });
@@ -156,25 +156,25 @@ class PaymentSimulator {
                     transactionId: txnId
                 };
             }
-            
+
             // 2. SIMULACIÓN DE RESULTADO
             // ===========================
-            
+
             const cardNumberPlain = paymentData.cardNumber;
             let result;
-            
+
             if (cardNumberPlain === TEST_CARDS.success) {
                 result = this._successfulPayment(paymentData, txnId, timestamp);
-            } 
+            }
             else if (cardNumberPlain === TEST_CARDS.decline) {
                 result = this._declinedPayment(paymentData, txnId, 'Tarjeta rechazada por banco');
-            } 
+            }
             else if (cardNumberPlain === TEST_CARDS.insufficient) {
                 result = this._declinedPayment(paymentData, txnId, 'Fondos insuficientes');
-            } 
+            }
             else if (cardNumberPlain === TEST_CARDS.expired) {
                 result = this._declinedPayment(paymentData, txnId, 'Tarjeta expirada');
-            } 
+            }
             else if (cardNumberPlain === TEST_CARDS['3d-secure']) {
                 result = this._3dSecureRequired(paymentData, txnId);
             }
@@ -182,10 +182,10 @@ class PaymentSimulator {
                 // Cualquier otra tarjeta = éxito (para testing)
                 result = this._successfulPayment(paymentData, txnId, timestamp);
             }
-            
+
             // 3. LOGGING
             // ==========
-            
+
             if (result.success) {
                 logger.audit('PAYMENT_SUCCESS', {
                     transactionId: txnId,
@@ -204,16 +204,16 @@ class PaymentSimulator {
                     email: paymentData.email
                 });
             }
-            
+
             return result;
-            
+
         } catch (error) {
             logger.error('PAYMENT_EXCEPTION', {
                 transactionId: txnId,
                 error: error.message,
                 stack: error.stack
             });
-            
+
             return {
                 success: false,
                 error: 'Error al procesar pago. Intenta de nuevo.',
@@ -222,7 +222,7 @@ class PaymentSimulator {
             };
         }
     }
-    
+
     /**
      * Pago exitoso
      */
@@ -236,15 +236,15 @@ class PaymentSimulator {
             cardLast4: paymentData.cardNumber.slice(-4),
             timestamp: timestamp.toISOString(),
             message: 'Pago procesado exitosamente',
-            
+
             // Info para recubo si es necesario
             refundableUntil: new Date(timestamp.getTime() + 90 * 24 * 60 * 60 * 1000).toISOString(), // 90 días
-            
+
             // Webhook que el frontend puede usar para confirmar
             webhookUrl: `/api/v1/payment/webhook/${txnId}`
         };
     }
-    
+
     /**
      * Pago rechazado
      */
@@ -257,14 +257,14 @@ class PaymentSimulator {
             code: 'PAYMENT_DECLINED',
             cardLast4: paymentData.cardNumber.slice(-4),
             timestamp: new Date().toISOString(),
-            
+
             // Sugerencias
             attempts: 1,
             maxAttempts: 3,
             message: `${reason}. Verifica tus datos e intenta con otra tarjeta.`
         };
     }
-    
+
     /**
      * 3D Secure requerido
      */
@@ -275,30 +275,30 @@ class PaymentSimulator {
             status: 'pending_3d_secure',
             error: 'Verificación 3D Secure requerida',
             code: 'REQUIRES_3D_SECURE',
-            
+
             // URL para redirigir a verificación
             verificationUrl: `/api/v1/payment/3d-secure/${txnId}`,
-            
+
             // Token temporal
             temporaryToken: crypto.randomBytes(16).toString('hex'),
-            
+
             message: 'Se requiere autenticación adicional. Redirigiendo...'
         };
     }
-    
+
     /**
      * Obtener estado de transacción
      */
     static async getTransactionStatus(transactionId) {
         logger.info('TRANSACTION_STATUS_CHECK', { transactionId });
-        
+
         // En producción, consultar a gateway real
         // Por ahora, simular basado en ID
-        
+
         if (!transactionId || !transactionId.startsWith('TXN_')) {
             return { error: 'Transaction ID inválido' };
         }
-        
+
         // Simular: transacciones recientes exitosas
         return {
             transactionId,
@@ -306,20 +306,20 @@ class PaymentSimulator {
             timestamp: new Date().toISOString()
         };
     }
-    
+
     /**
      * Reembolso
      */
     static async refundPayment(transactionId, amount) {
         const refundId = `REFUND_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
-        
+
         logger.audit('REFUND_PROCESSED', {
             refundId,
             originalTransactionId: transactionId,
             amount,
             timestamp: new Date().toISOString()
         });
-        
+
         return {
             success: true,
             refundId,
@@ -335,7 +335,7 @@ class PaymentSimulator {
  * Express Route Handler
  */
 const paymentRoutes = (app) => {
-    
+
     /**
      * POST /api/v1/payment/simulate
      * Procesar pago simulado
@@ -351,19 +351,19 @@ const paymentRoutes = (app) => {
      *   "amount": 10000,  // centavos ($100.00)
      *   "currency": "USD",
      *   "orderId": "ORD_123456",
-     *   "description": "Compra en AuraMarket"
+     *   "description": "Compra en ElRinconAzul"
      * }
      */
     app.post('/api/v1/payment/simulate', async (req, res) => {
         const { cardNumber, expMonth, expYear, cvv, cardholderName, email, amount, currency, orderId, description } = req.body;
-        
+
         // Validar entrada
         if (!cardNumber || !amount || !email || !orderId) {
             return res.status(400).json({
                 error: 'Campos requeridos: cardNumber, amount, email, orderId'
             });
         }
-        
+
         const result = await PaymentSimulator.processPayment({
             cardNumber,
             expMonth,
@@ -376,24 +376,24 @@ const paymentRoutes = (app) => {
             orderId,
             description: description || 'Payment'
         });
-        
+
         // HTTP status basado en resultado
         const statusCode = result.success ? 200 : 402; // 402 Payment Required
-        
+
         res.status(statusCode).json(result);
     });
-    
+
     /**
      * GET /api/v1/payment/transaction/:transactionId
      * Obtener estado de transacción
      */
     app.get('/api/v1/payment/transaction/:transactionId', async (req, res) => {
         const { transactionId } = req.params;
-        
+
         const result = await PaymentSimulator.getTransactionStatus(transactionId);
         res.json(result);
     });
-    
+
     /**
      * POST /api/v1/payment/refund
      * Procesar reembolso
@@ -406,17 +406,17 @@ const paymentRoutes = (app) => {
      */
     app.post('/api/v1/payment/refund', async (req, res) => {
         const { transactionId, amount } = req.body;
-        
+
         if (!transactionId) {
             return res.status(400).json({
                 error: 'transactionId requerido'
             });
         }
-        
+
         const result = await PaymentSimulator.refundPayment(transactionId, amount);
         res.json(result);
     });
-    
+
     /**
      * GET /api/v1/payment/test-cards
      * Lista de tarjetas de prueba (solo para desarrollo)
@@ -425,7 +425,7 @@ const paymentRoutes = (app) => {
         if (process.env.NODE_ENV === 'production') {
             return res.status(403).json({ error: 'Not available in production' });
         }
-        
+
         res.json({
             message: 'Test Card Numbers (Development Only)',
             cards: {

@@ -82,7 +82,7 @@ const createOrder = asyncHandler(async (req, res) => {
     const inventoryCheck = await Promise.all(
         items.map(async (item) => {
             const product = await Product.findById(item.productId);
-            
+
             if (!product) {
                 throw new AppError(`Product ${item.productId} not found`, 404, 'PRODUCT_NOT_FOUND');
             }
@@ -105,7 +105,7 @@ const createOrder = asyncHandler(async (req, res) => {
 
     // 3️⃣ CREAR OBJETO DE PEDIDO
     const orderNumber = `ORD-${new Date().getFullYear()}-${generateRandomNumber(6)}`;
-    
+
     const orderData = {
         orderNumber,
         userId, // ✅ Del usuario autenticado
@@ -293,14 +293,14 @@ router.post(
 async function processPayment(paymentData) {
     // En producción, usar Stripe/PayPal
     // Ejemplo Stripe:
-    
+
     // const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
     // const paymentIntent = await stripe.paymentIntents.create({
     //     amount: Math.round(paymentData.amount * 100), // En centavos
     //     currency: paymentData.currency,
     //     metadata: paymentData.metadata
     // });
-    
+
     // Por ahora, simular:
     return {
         transactionId: generateTransactionId(),
@@ -342,7 +342,7 @@ function logAudit(action, userId, details) {
 async function sendConfirmationEmail(data) {
     // Integración con SendGrid, AWS SES, etc
     const emailService = require('../services/email');
-    
+
     return emailService.send({
         to: data.email,
         subject: `Pedido Confirmado - ${data.orderNumber}`,
@@ -351,7 +351,7 @@ async function sendConfirmationEmail(data) {
             orderNumber: data.orderNumber,
             total: data.total,
             items: data.items,
-            trackingUrl: `https://auramarket.com/track/${data.orderNumber}`
+            trackingUrl: `https://ElRinconAzul.com/track/${data.orderNumber}`
         }
     });
 }

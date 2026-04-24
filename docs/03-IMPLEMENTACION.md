@@ -1,4 +1,4 @@
-# 📚 Guía de Implementación Completa - AuraMarket 2026
+# 📚 Guía de Implementación Completa - ElRinconAzul 2026
 
 ## 🎯 Estructura del Proyecto
 
@@ -55,7 +55,7 @@ tienda_virtual/
 cd d:\tienda_virtual
 git init
 git add .
-git commit -m "Initial commit: AuraMarket 2026"
+git commit -m "Initial commit: ElRinconAzul 2026"
 ```
 
 #### 2️⃣ Configurar Backend
@@ -73,7 +73,7 @@ cp .env.example .env
 # NODE_ENV=development
 # PORT=5000
 # JWT_SECRET=tu-clave-secreta-super-larga
-# MONGODB_URI=mongodb://localhost:27017/auramarket
+# MONGODB_URI=mongodb://localhost:27017/ElRinconAzul
 ```
 
 #### 3️⃣ Iniciar MongoDB
@@ -99,7 +99,7 @@ npm run dev
 
 # Output esperado:
 # ╔════════════════════════════════════════╗
-# ║     🌟 AuraMarket Backend 2026 🌟      ║
+# ║     🌟 ElRinconAzul Backend 2026 🌟      ║
 # ╠════════════════════════════════════════╣
 # ║ Status: ✅ Running                     ║
 # ║ Server: localhost:5000                 ║
@@ -322,8 +322,8 @@ mongosh
 # Ver bases de datos
 show databases
 
-# Usar auramarket
-use auramarket
+# Usar ElRinconAzul
+use ElRinconAzul
 
 # Ver colecciones
 show collections
@@ -343,17 +343,17 @@ db.orders.find().pretty()
 # .env.production
 NODE_ENV=production
 PORT=443
-HOST=auramarket.com
+HOST=ElRinconAzul.com
 
 # Seguridad estricta
 JWT_SECRET=[generar-clave-larga-aleatoria]
 BCRYPT_ROUNDS=12
 
 # MongoDB Atlas (no localhost)
-MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/auramarket?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/ElRinconAzul?retryWrites=true&w=majority
 
 # CORS restringido
-CORS_ORIGIN=https://auramarket.com
+CORS_ORIGIN=https://ElRinconAzul.com
 
 # Rate limiting más agresivo
 RATE_LIMIT_MAX_REQUESTS=50
@@ -479,4 +479,4 @@ app.use(cors(corsOptions));
 
 **Documentación actualizada**: Marzo 2026
 **Versión**: 1.0.0 - Production Ready
-**Soporte**: Contactar a dev@auramarket.com
+**Soporte**: Contactar a dev@elrinconazul.com

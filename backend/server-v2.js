@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * ════════════════════════════════════════════════════════════════════════════
- * AURAMARKET - BACKEND SERVER v2.0 (ISO 27001 + Enhanced Security)
+ * ElRinconAzul - BACKEND SERVER v2.0 (ISO 27001 + Enhanced Security)
  * ════════════════════════════════════════════════════════════════════════════
  * 
  * Seguridad mejorada:
@@ -56,8 +56,8 @@ class AuditLogger {
     warn(action, details) { this.log('warn', action, details); }
     error(action, details) { this.log('error', action, details); }
     critical(action, details) { this.log('critical', action, details); }
-    audit(action, userId, details) { 
-        this.log('audit', action, { userId, ...details }); 
+    audit(action, userId, details) {
+        this.log('audit', action, { userId, ...details });
     }
 }
 
@@ -154,12 +154,12 @@ const validator = {
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return regex.test(String(email).toLowerCase());
     },
-    
+
     password: (password) => {
         // Mínimo 8 caracteres, 1 mayúscula, 1 número
         return password.length >= 8 && /[A-Z]/.test(password) && /\d/.test(password);
     },
-    
+
     sanitizeString: (str) => {
         if (typeof str !== 'string') return '';
         return str
@@ -167,7 +167,7 @@ const validator = {
             .trim()
             .substring(0, 255); // Límite de longitud
     },
-    
+
     sanitizeObject: (obj) => {
         const sanitized = {};
         for (const [key, value] of Object.entries(obj)) {
@@ -198,12 +198,12 @@ app.use((req, res, next) => {
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('X-XSS-Protection', '1; mode=block');
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-    
+
     // Sanitizar input body
     if (req.body && typeof req.body === 'object') {
         req.body = validator.sanitizeObject(req.body);
     }
-    
+
     next();
 });
 
@@ -281,7 +281,7 @@ logger.info('STARTUP', { message: 'Health check endpoint registrado' });
 // Get all products
 app.get('/api/v1/products', (req, res) => {
     logger.info('GET_PRODUCTS', { ip: req.ip });
-    
+
     res.status(200).json({
         success: true,
         count: mockProducts.length,
@@ -292,7 +292,7 @@ app.get('/api/v1/products', (req, res) => {
 // Get product by ID
 app.get('/api/v1/products/:id', (req, res) => {
     const productId = parseInt(req.params.id);
-    
+
     if (isNaN(productId)) {
         logger.warn('INVALID_PRODUCT_ID', { id: req.params.id, ip: req.ip });
         return res.status(400).json({
@@ -300,9 +300,9 @@ app.get('/api/v1/products/:id', (req, res) => {
             error: 'ID de producto inválido',
         });
     }
-    
+
     const product = mockProducts.find(p => p.id === productId);
-    
+
     if (!product) {
         logger.warn('PRODUCT_NOT_FOUND', { id: productId, ip: req.ip });
         return res.status(404).json({
@@ -310,9 +310,9 @@ app.get('/api/v1/products/:id', (req, res) => {
             error: 'Producto no encontrado',
         });
     }
-    
+
     logger.info('GET_PRODUCT_DETAIL', { productId, ip: req.ip });
-    
+
     res.status(200).json({
         success: true,
         data: product,
@@ -325,7 +325,7 @@ app.get('/api/v1/products/:id', (req, res) => {
 // Auth: Login (simulado)
 app.post('/api/v1/auth/login', authLimiter, (req, res) => {
     const { email, password } = req.body;
-    
+
     // Validación
     if (!email || !validator.email(email)) {
         logger.warn('LOGIN_INVALID_EMAIL', { email: email ? 'provided' : 'missing', ip: req.ip });
@@ -334,7 +334,7 @@ app.post('/api/v1/auth/login', authLimiter, (req, res) => {
             error: 'Email inválido',
         });
     }
-    
+
     if (!password || password.length < 1) {
         logger.warn('LOGIN_MISSING_PASSWORD', { email, ip: req.ip });
         return res.status(400).json({
@@ -342,12 +342,12 @@ app.post('/api/v1/auth/login', authLimiter, (req, res) => {
             error: 'Contraseña requerida',
         });
     }
-    
+
     logger.audit('LOGIN_ATTEMPT', 'user:' + email, { ip: req.ip, success: true });
-    
+
     // Mock token (En producción: generar JWT real)
     const mockToken = crypto.randomBytes(32).toString('hex');
-    
+
     res.status(200).json({
         success: true,
         message: 'Login exitoso (simulado)',
@@ -363,7 +363,7 @@ app.post('/api/v1/auth/login', authLimiter, (req, res) => {
 // Checkout: Crear pedido con validación completa
 app.post('/api/v1/orders', checkoutLimiter, (req, res) => {
     const { items, email, fullName, phone } = req.body;
-    
+
     // Validación de email
     if (!email || !validator.email(email)) {
         logger.warn('CHECKOUT_INVALID_EMAIL', { email, ip: req.ip });
@@ -372,7 +372,7 @@ app.post('/api/v1/orders', checkoutLimiter, (req, res) => {
             error: 'Email inválido',
         });
     }
-    
+
     // Validación de items
     if (!items || !Array.isArray(items) || items.length === 0) {
         logger.warn('CHECKOUT_NO_ITEMS', { email, ip: req.ip });
@@ -381,7 +381,7 @@ app.post('/api/v1/orders', checkoutLimiter, (req, res) => {
             error: 'Carrito vacío',
         });
     }
-    
+
     // Validación de nombre
     if (!fullName || fullName.length < 2) {
         logger.warn('CHECKOUT_INVALID_NAME', { email, ip: req.ip });
@@ -390,7 +390,7 @@ app.post('/api/v1/orders', checkoutLimiter, (req, res) => {
             error: 'Nombre inválido',
         });
     }
-    
+
     // Validación de teléfono
     if (!phone || !/^\d{6,20}$/.test(phone.replace(/[\s\-()]/g, ''))) {
         logger.warn('CHECKOUT_INVALID_PHONE', { email, ip: req.ip });
@@ -399,17 +399,17 @@ app.post('/api/v1/orders', checkoutLimiter, (req, res) => {
             error: 'Teléfono inválido',
         });
     }
-    
+
     const orderId = 'ORD-' + Date.now();
     const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    
+
     logger.audit('ORDER_CREATED', email, {
         orderId,
         itemCount: items.length,
         total,
         ip: req.ip,
     });
-    
+
     res.status(201).json({
         success: true,
         message: 'Pedido creado exitosamente',
@@ -434,7 +434,7 @@ app.post('/api/v1/orders', checkoutLimiter, (req, res) => {
 // Simulated payment processing
 app.post('/api/v1/payments/process', checkoutLimiter, (req, res) => {
     const { orderId, amount, token } = req.body;
-    
+
     // Validación básica
     if (!orderId || !amount || !token) {
         logger.warn('PAYMENT_MISSING_DATA', { orderId, ip: req.ip });
@@ -443,7 +443,7 @@ app.post('/api/v1/payments/process', checkoutLimiter, (req, res) => {
             error: 'Datos de pago incompletos',
         });
     }
-    
+
     // Validación de cantidad
     if (isNaN(amount) || amount <= 0) {
         logger.warn('PAYMENT_INVALID_AMOUNT', { orderId, amount, ip: req.ip });
@@ -452,18 +452,18 @@ app.post('/api/v1/payments/process', checkoutLimiter, (req, res) => {
             error: 'Cantidad inválida',
         });
     }
-    
+
     // Simular pago (50% de éxito para demo)
     const success = Math.random() > 0.5;
     const transactionId = crypto.randomBytes(16).toString('hex');
-    
+
     logger.audit('PAYMENT_ATTEMPT', orderId, {
         amount,
         success,
         transactionId,
         ip: req.ip,
     });
-    
+
     if (success) {
         logger.info('PAYMENT_SUCCESS', { orderId, amount, transactionId });
         return res.status(200).json({
@@ -510,10 +510,10 @@ app.use((err, req, res, next) => {
         method: req.method,
         ip: req.ip,
     });
-    
+
     // No exponer detalles internos en producción
     const message = NODE_ENV === 'development' ? err.message : 'Error interno del servidor';
-    
+
     res.status(err.statusCode || 500).json({
         success: false,
         error: message,
@@ -527,14 +527,14 @@ app.use((err, req, res, next) => {
 
 const server = app.listen(PORT, () => {
     logger.info('STARTUP', {
-        message: '🌟 AuraMarket API iniciado',
+        message: '🌟 ElRinconAzul API iniciado',
         port: PORT,
         environment: NODE_ENV,
         security: ['Helmet', 'CORS', 'Rate Limiting', 'Input Validation', 'Audit Logging'],
     });
 
     console.log('\n╔════════════════════════════════════════════════════════════════╗');
-    console.log('║          🌟 AURAMARKET API v2.0 - ISO 27001 🔒                ║');
+    console.log('║          🌟 ElRinconAzul API v2.0 - ISO 27001 🔒                ║');
     console.log('╠════════════════════════════════════════════════════════════════╣');
     console.log(`║  Servidor:  http://localhost:${PORT}`);
     console.log(`║  Ambiente:  ${NODE_ENV}`);

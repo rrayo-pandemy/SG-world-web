@@ -1,4 +1,4 @@
-# 🏗️ AuraMarket - Arquitectura del Sistema 2026
+# 🏗️ ElRinconAzul - Arquitectura del Sistema 2026
 
 ## Diagrama de Capas
 

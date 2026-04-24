@@ -1,4 +1,4 @@
-# 📑 AuraMarket 2026 - Índice Completo de Archivos
+# 📑 ElRinconAzul 2026 - Índice Completo de Archivos
 
 **Versión:** 2.0  
 **Última actualización:** Marzo 29, 2026  
@@ -588,5 +588,5 @@ Desarrollado con:
 
 ---
 
-**🎉 AuraMarket v2.0 - COMPLETAMENTE FUNCIONAL Y SEGURO**
+**🎉 ElRinconAzul v2.0 - COMPLETAMENTE FUNCIONAL Y SEGURO**
 

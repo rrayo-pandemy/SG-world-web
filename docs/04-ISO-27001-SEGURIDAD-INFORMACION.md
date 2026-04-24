@@ -1,4 +1,4 @@
-# 🔐 ISO 27001 - Implementación de Seguridad en AuraMarket 2026
+# 🔐 ISO 27001 - Implementación de Seguridad en ElRinconAzul 2026
 
 **Fecha:** Marzo 29, 2026  
 **Versión:** 2.0  
@@ -8,7 +8,7 @@
 
 ## 1. Introducción
 
-ISO/IEC 27001 es el estándar internacional para **Sistemas de Gestión de la Seguridad de la Información (SGSI)**. Este documento describe cómo AuraMarket implementa los controles de seguridad requeridos para proteger la información de clientes, transacciones y datos empresariales contra acceso no autorizado, modificación, pérdida o exposición.
+ISO/IEC 27001 es el estándar internacional para **Sistemas de Gestión de la Seguridad de la Información (SGSI)**. Este documento describe cómo ElRinconAzul implementa los controles de seguridad requeridos para proteger la información de clientes, transacciones y datos empresariales contra acceso no autorizado, modificación, pérdida o exposición.
 
 ### Objetivos de Seguridad
 
@@ -20,7 +20,7 @@ ISO/IEC 27001 es el estándar internacional para **Sistemas de Gestión de la Se
 
 ## 2. Clasificación de Información (ISO 27001:2022 Cláusula 6.2)
 
-Todos los datos en AuraMarket se clasifican según nivel de sensibilidad:
+Todos los datos en ElRinconAzul se clasifican según nivel de sensibilidad:
 
 ### NIVEL 1: PÚBLICO
 - Descripciones de productos
@@ -784,7 +784,7 @@ CUMPLIMIENTO NORMATIVO
 
 ## Conclusión
 
-AuraMarket implementa los controles de ISO 27001 requeridos para proteger la información de clientes al nivel de **CONFIDENCIAL** (Nivel 3 de clasificación). Con las mejoras en v2.0, alcanzamos cumplimiento de:
+ElRinconAzul implementa los controles de ISO 27001 requeridos para proteger la información de clientes al nivel de **CONFIDENCIAL** (Nivel 3 de clasificación). Con las mejoras en v2.0, alcanzamos cumplimiento de:
 
 - ✅ ISO/IEC 27001:2022 (SGSI)
 - ✅ RGPD (Protección de datos UE)

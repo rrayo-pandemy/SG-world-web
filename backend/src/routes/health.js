@@ -5,7 +5,7 @@ const router = express.Router();
 router.get('/', (req, res) => {
   return res.json({
     success: true,
-    service: 'AuraMarket API',
+    service: 'ElRinconAzul API',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
   });

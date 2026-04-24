@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,12 +12,13 @@
                 if (savedTheme === 'light' || savedTheme === 'dark') {
                     document.documentElement.setAttribute('data-theme', savedTheme);
                 }
-            } catch (e) {}
+            } catch (e) { }
         })();
     </script>
-    <title>AuraMarket Admin</title>
+    <title>ElRinconAzul Admin</title>
     <link rel="stylesheet" href="css/admin.css">
 </head>
+
 <body>
     <header class="topbar">
         <div>
@@ -24,9 +26,11 @@
             <p>Gestion de usuarios y roles en tiempo real</p>
         </div>
         <div class="topbar-actions">
-            <button class="theme-toggle" aria-label="Activar modo oscuro" aria-pressed="false" data-theme-glyph="☾" type="button">
+            <button class="theme-toggle" aria-label="Activar modo oscuro" aria-pressed="false" data-theme-glyph="☾"
+                type="button">
                 <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-                    <path d="M21 12.79A9 9 0 0111.21 3c0 .34.02.67.05 1A7 7 0 1019 19.74c.33.03.66.05 1 .05z" fill="currentColor"/>
+                    <path d="M21 12.79A9 9 0 0111.21 3c0 .34.02.67.05 1A7 7 0 1019 19.74c.33.03.66.05 1 .05z"
+                        fill="currentColor" />
                 </svg>
             </button>
             <button id="logout-btn" class="btn btn-danger hidden" type="button">Cerrar sesion</button>
@@ -137,7 +141,8 @@
                     <h3>Agregar producto</h3>
                     <label>SKU (opcional)<input type="text" id="create-product-sku"></label>
                     <label>Nombre<input type="text" id="create-product-name" required></label>
-                    <label>Descripcion<textarea id="create-product-description" rows="3" minlength="10" required></textarea></label>
+                    <label>Descripcion<textarea id="create-product-description" rows="3" minlength="10"
+                            required></textarea></label>
                     <label>Categoria<input type="text" id="create-product-category" minlength="3" required></label>
                     <label>Precio<input type="number" id="create-product-price" min="0.01" step="0.01" required></label>
                     <label>Stock<input type="number" id="create-product-stock" min="0" step="1" required></label>
@@ -178,4 +183,5 @@
     <script src="js/theme-manager.js"></script>
     <script src="js/admin.js"></script>
 </body>
+
 </html>

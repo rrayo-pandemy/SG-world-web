@@ -12,7 +12,7 @@ from flask import Flask, g, jsonify, make_response, request, send_from_directory
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / 'data'
-DB_PATH = DATA_DIR / 'auramarket_app.sqlite3'
+DB_PATH = DATA_DIR / 'ElRinconAzul_app.sqlite3'
 FRONTEND_DIR = (BASE_DIR.parent / 'frontend').resolve()
 
 JWT_SECRET = os.getenv('JWT_SECRET', 'change_this_secret_in_production')
@@ -293,8 +293,8 @@ def init_db():
     admin_role_id = conn.execute('SELECT id FROM roles WHERE name = ?', ('admin',)).fetchone()[0]
     user_role_id = conn.execute('SELECT id FROM roles WHERE name = ?', ('user',)).fetchone()[0]
 
-    admin_email = 'admin@auramarket.com'
-    user_email = 'cliente@auramarket.com'
+    admin_email = 'admin@elrinconazul.com'
+    user_email = 'cliente@elrinconazul.com'
 
     exists_admin = conn.execute('SELECT id FROM users WHERE email = ?', (admin_email,)).fetchone()
     if not exists_admin:
@@ -305,7 +305,7 @@ def init_db():
             INSERT INTO users(name, email, password_hash, role_id, is_premium, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?)
             ''',
-            ('Administrador AuraMarket', admin_email, password_hash, admin_role_id, 1, now, now),
+            ('Administrador ElRinconAzul', admin_email, password_hash, admin_role_id, 1, now, now),
         )
 
     exists_user = conn.execute('SELECT id FROM users WHERE email = ?', (user_email,)).fetchone()
