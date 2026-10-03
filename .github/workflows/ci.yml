@@ -1,4 +1,8 @@
 name: CI
+Run backend tests
+env:
+  JWT_SECRET: ${{ secrets.ronald_wilmer_rayo_espinoza_Rnd_994888516 }}
+run: npm test
 
 on:
   push:
