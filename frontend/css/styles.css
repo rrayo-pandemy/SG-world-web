@@ -949,11 +949,11 @@ svg {
 .hero__title {
     display: flex;
     flex-direction: column;
-    gap: 0.08em;
+    gap: 0.025em;
     margin-bottom: 1.5rem;
     font-size: clamp(2.75rem, 6vw, 5.3rem);
     line-height: 0.9;
-    letter-spacing: -0.07em;
+    letter-spacing: -0.065em;
 }
 
 .hero__phrase {
@@ -966,11 +966,14 @@ svg {
 .hero__phrase--lead {
     font-size: 0.74em;
     color: var(--color-text);
+    line-height: 0.95;
 }
 
 .hero__phrase--feature {
     font-size: 0.96em;
     color: var(--color-text);
+    line-height: 0.96;
+    margin-top: 0.08em;
 }
 
 .hero__word {
