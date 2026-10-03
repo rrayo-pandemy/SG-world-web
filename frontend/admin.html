@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0b3c5d">
+    <script src="runtime-config.js"></script>
     <script>
         (function () {
             try {
@@ -40,7 +41,7 @@
             }
 
             var savedWanApi = normalizeApiBase(localStorage.getItem('wan_api_base'));
-            window.API_BASE = savedWanApi || window.location.origin;
+            window.API_BASE = savedWanApi || window.DEPLOY_API_BASE || window.location.origin;
 
             if (!savedWanApi && window.location.port === '8000') {
                 window.API_BASE = window.location.protocol + '//' + window.location.hostname + ':5000';

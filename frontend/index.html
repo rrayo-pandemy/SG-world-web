@@ -17,6 +17,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Ganesh - Ecommerce Premium">
     <meta name="twitter:description" content="Tienda online premium con arquitectura segura y diseño moderno.">
+    <script src="runtime-config.js"></script>
     <script>
         (function () {
             try {
@@ -52,7 +53,7 @@
             }
 
             var savedWanApi = normalizeApiBase(localStorage.getItem('wan_api_base'));
-            window.API_BASE = savedWanApi || window.location.origin;
+            window.API_BASE = savedWanApi || window.DEPLOY_API_BASE || window.location.origin;
 
             if (!savedWanApi && window.location.port === '8000') {
                 window.API_BASE = window.location.protocol + '//' + window.location.hostname + ':5000';
