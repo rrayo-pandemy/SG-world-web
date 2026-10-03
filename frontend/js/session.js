@@ -4,7 +4,6 @@
 
 (function initSessionManager() {
   const STORAGE_USER_KEY = 'ElRinconAzul_current_user';
-  const STORAGE_TOKEN_KEY = 'authToken';
   const STORAGE_EMAIL_KEY = 'userEmail';
   const STORAGE_PREMIUM_KEY = 'premiumLogged';
   const STORAGE_NORMAL_KEY = 'normalLogged';
@@ -18,28 +17,11 @@
     }
 
     getApiBaseCandidates() {
-      const candidates = [];
-      const addCandidate = (value) => {
-        if (typeof value !== 'string') return;
-        const normalized = value.trim().replace(/\/$/, '');
-        if (!normalized && normalized !== '') return;
-        if (!candidates.includes(normalized)) candidates.push(normalized);
-      };
-
-      if (typeof window.API_BASE === 'string' && window.API_BASE.trim()) {
-        addCandidate(window.API_BASE);
-      }
-
-      if (window.location.port === '8000') {
-        addCandidate(window.location.protocol + '//' + window.location.hostname + ':5000');
-      }
-      addCandidate('');
-      return candidates;
+      return window.ApiConfig ? window.ApiConfig.getBaseCandidates() : [''];
     }
 
     buildApiUrl(base, path) {
-      if (/^https?:\/\//i.test(path)) return path;
-      return base ? `${base}${path}` : path;
+      return window.ApiConfig ? window.ApiConfig.buildUrl(base, path) : (base ? `${base}${path}` : path);
     }
 
     normalizeUser(rawUser) {
@@ -49,7 +31,7 @@
         id: Number(rawUser.id),
         name: String(rawUser.name || 'Cliente').trim() || 'Cliente',
         email: String(rawUser.email || '').trim().toLowerCase(),
-        role: String(rawUser.role || 'customer').trim().toLowerCase(),
+        role: String(rawUser.role || 'user').trim().toLowerCase(),
         isPremium: Boolean(rawUser.isPremium),
       };
     }
@@ -87,24 +69,16 @@
     }
 
     getAuthToken() {
-      try {
-        return localStorage.getItem(STORAGE_TOKEN_KEY) || '';
-      } catch (_error) {
-        return '';
-      }
+      // Token storage removed: rely on HttpOnly cookie + server-side session
+      return '';
     }
 
     setAuthToken(token) {
-      try {
-        if (token) localStorage.setItem(STORAGE_TOKEN_KEY, token);
-        else localStorage.removeItem(STORAGE_TOKEN_KEY);
-      } catch (_error) {
-        // Ignore storage errors.
-      }
+      // No-op: do not persist tokens in localStorage. Server should use HttpOnly cookies.
     }
 
     isAuthenticated() {
-      return Boolean(this.getAuthToken() && this.user && this.user.id);
+      return Boolean(this.user && this.user.id);
     }
 
     isPremiumUser() {
@@ -116,21 +90,13 @@
     }
 
     async fetchCurrentUser() {
-      const token = this.getAuthToken();
-      if (!token) return { unauthorized: true };
-
-      let unauthorized = false;
-
       for (const base of this.getApiBaseCandidates()) {
         try {
           const response = await fetch(this.buildApiUrl(base, '/api/v1/me'), {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            credentials: 'include',
           });
 
           if (response.status === 401) {
-            unauthorized = true;
             continue;
           }
 
@@ -143,20 +109,14 @@
         }
       }
 
-      return { unauthorized };
+      return { unauthorized: true };
     }
 
     async hydrate() {
-      const token = this.getAuthToken();
-      if (!token) {
-        this.emitSessionChange();
-        return;
-      }
-
       const result = await this.fetchCurrentUser();
       if (result.user) {
         this.persistUser(result.user);
-      } else if (result.unauthorized) {
+      } else {
         this.clearSession({ emit: false });
       }
 
@@ -164,8 +124,8 @@
       this.emitSessionChange();
     }
 
-    async handleAuthSuccess(user, token) {
-      this.setAuthToken(token || this.getAuthToken());
+    async handleAuthSuccess(user) {
+      // Server sets HttpOnly cookie; client persists minimal public user info only.
       this.persistUser(user);
       this.render();
       this.emitSessionChange();
@@ -173,13 +133,26 @@
 
     clearSession({ emit = true } = {}) {
       this.user = null;
-      this.setAuthToken('');
       this.persistUser(null);
       this.render();
       if (emit) this.emitSessionChange();
     }
 
     async logout() {
+      // Call server to clear HttpOnly auth cookie
+      try {
+        const bases = this.getApiBaseCandidates();
+        for (const base of bases) {
+          try {
+            await fetch(this.buildApiUrl(base, '/api/v1/auth/logout'), {
+              method: 'POST',
+              credentials: 'include',
+            });
+            break;
+          } catch (_e) { /* try next */ }
+        }
+      } catch (_error) { /* non-fatal */ }
+
       this.clearSession({ emit: true });
       document.body.style.overflow = '';
     }
@@ -217,7 +190,7 @@
     }
 
     handlePremiumRequest() {
-      const message = 'Tu cuenta ya inicio sesion. Para activar Premium, solicita el cambio desde administracion o soporte.';
+      const message = 'Tu cuenta ya inicio sesion. Para activar Premium, contacta a soporte.';
       if (window.cartManager && typeof window.cartManager.showNotification === 'function') {
         window.cartManager.showNotification(message);
         return;
@@ -251,7 +224,7 @@
 
       window.addEventListener('storage', (event) => {
         if (!event.key) return;
-        if (![STORAGE_TOKEN_KEY, STORAGE_USER_KEY, STORAGE_PREMIUM_KEY, STORAGE_NORMAL_KEY].includes(event.key)) return;
+        if (![STORAGE_USER_KEY, STORAGE_PREMIUM_KEY, STORAGE_NORMAL_KEY].includes(event.key)) return;
 
         this.user = this.readStoredUser();
         this.render();

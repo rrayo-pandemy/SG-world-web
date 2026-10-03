@@ -1,6 +1,6 @@
 <!-- 
   ╔════════════════════════════════════════════════════════════╗
-  ║     ElRinconAzul - Mejoras Recomendadas para Frontend       ║
+  ║     Ganesh - Mejoras Recomendadas para Frontend       ║
   ║     Implementación de WCAG 2.1 AA + Accesibilidad         ║
   ╚════════════════════════════════════════════════════════════╝
 -->

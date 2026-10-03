@@ -1,4 +1,4 @@
-﻿function notFound(req, res) {
+function notFound(req, res) {
   return res.status(404).json({
     success: false,
     message: 'Ruta no encontrada',
@@ -7,7 +7,7 @@
   });
 }
 
-function errorHandler(err, req, res, next) {
+function errorHandler(err, req, res, _next) {
   const statusCode = err.statusCode || 500;
   const message = process.env.NODE_ENV === 'production' ? 'Error interno del servidor' : err.message;
 

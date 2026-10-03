@@ -3,6 +3,15 @@
  * Handles product detail, recommendations, cart actions, and admin editing.
  */
 
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+}
+
 class ProductDetailManager {
     constructor() {
         this.productId = this.getProductIdFromURL();
@@ -23,26 +32,7 @@ class ProductDetailManager {
     }
 
     getApiBaseCandidates() {
-        const candidates = [];
-        const pushCandidate = (value) => {
-            if (typeof value !== 'string') return;
-            const normalized = value.trim().replace(/\/$/, '');
-            if (!normalized && normalized !== '') return;
-            if (!candidates.includes(normalized)) candidates.push(normalized);
-        };
-
-        if (typeof window.API_BASE === 'string' && window.API_BASE.trim()) {
-            pushCandidate(window.API_BASE);
-        }
-
-        // Same origin first for integrated deployments.
-        pushCandidate('');
-
-        // Common local backend ports used in this project.
-        pushCandidate('http://localhost:5000');
-        pushCandidate('http://localhost:3000');
-
-        return candidates;
+        return window.ApiConfig ? window.ApiConfig.getBaseCandidates() : ['', 'http://localhost:5000', 'http://localhost:3000'];
     }
 
     buildApiUrl(path) {
@@ -51,12 +41,11 @@ class ProductDetailManager {
     }
 
     getAuthToken() {
-        return localStorage.getItem('authToken') || '';
+        return '';
     }
 
     getAuthHeaders() {
-        const token = this.getAuthToken();
-        return token ? { Authorization: `Bearer ${token}` } : {};
+        return {};
     }
 
     decodeJwtPayload(token) {
@@ -74,7 +63,9 @@ class ProductDetailManager {
     }
 
     isAuthenticated() {
-        return !!localStorage.getItem('authToken');
+        return window.sessionManager && typeof window.sessionManager.isAuthenticated === 'function'
+            ? window.sessionManager.isAuthenticated()
+            : false;
     }
 
     getUserInfo() {
@@ -148,9 +139,12 @@ class ProductDetailManager {
     }
 
     async detectAdminSession() {
-        if (this.hasAdminRole()) {
-            this.isAdminSession = true;
-            return true;
+        if (window.sessionManager && typeof window.sessionManager.isAuthenticated === 'function' && window.sessionManager.isAuthenticated()) {
+            const user = window.sessionManager.getCurrentUser();
+            if (user && user.role === 'admin') {
+                this.isAdminSession = true;
+                return true;
+            }
         }
 
         const bases = this.getApiBaseCandidates();
@@ -160,9 +154,6 @@ class ProductDetailManager {
                 const response = await fetch(meUrl, {
                     method: 'GET',
                     credentials: 'include',
-                    headers: {
-                        ...this.getAuthHeaders(),
-                    },
                 });
 
                 if (!response.ok) continue;
@@ -182,60 +173,17 @@ class ProductDetailManager {
     }
 
     getMockProducts() {
-        return [
-            {
-                id: 1,
-                name: 'Auroral Essence',
-                description: 'Luminosity serum with premium northern extracts.',
-                detailedDescription: 'Premium serum for nightly skincare routines with hydrating compounds.',
-                price: 49.99,
-                category: 'skincare',
-                image: 'https://img.freepik.com/premium-photo/digital-aurora-essence_1029473-34104.jpg?w=996',
-                rating: 4.8,
-                reviews: 156,
-                stock: 45,
-                specs: ['Content: 30ml', 'Type: Premium serum', 'Origin: Nordic ingredients'],
-            },
-            {
-                id: 2,
-                name: 'Glacial Shield',
-                description: 'Protective day cream with SPF support.',
-                detailedDescription: 'Day cream with fast absorption and antioxidant properties.',
-                price: 64.99,
-                category: 'skincare',
-                image: 'https://via.placeholder.com/500x500/1abc9c/ffffff?text=Glacial+Shield',
-                rating: 4.9,
-                reviews: 203,
-                stock: 32,
-                specs: ['Content: 50ml', 'SPF: 30', 'Type: Day cream'],
-            },
-            {
-                id: 3,
-                name: 'Lunar Glow Mist',
-                description: 'Facial mist for hydration and refresh.',
-                detailedDescription: 'Portable hydration mist with a calming aroma profile.',
-                price: 39.99,
-                category: 'skincare',
-                image: 'https://via.placeholder.com/500x500/ff9d5c/ffffff?text=Lunar+Glow+Mist',
-                rating: 4.7,
-                reviews: 89,
-                stock: 78,
-                specs: ['Content: 100ml', 'Type: Hydration mist', 'Portable format'],
-            },
-            {
-                id: 4,
-                name: 'Stellar Oil',
-                description: 'Nourishing facial oil for night care.',
-                detailedDescription: 'Concentrated facial oil for deep night nourishment.',
-                price: 54.99,
-                category: 'skincare',
-                image: 'https://via.placeholder.com/500x500/6b6560/ffffff?text=Stellar+Oil',
-                rating: 4.9,
-                reviews: 134,
-                stock: 56,
-                specs: ['Content: 25ml', 'Type: Facial oil', 'Use: Night routine'],
-            },
-        ];
+        // Intentar usar el caché global si existe
+        try {
+            const cached = localStorage.getItem('ElRinconAzul_products_cache');
+            if (cached) {
+                const list = JSON.parse(cached);
+                if (Array.isArray(list) && list.length > 0) return list;
+            }
+        } catch (e) {}
+
+        // Productos se cargan desde la API. Array vacío como fallback.
+        return [];
     }
 
     loadProductDetail() {
@@ -252,7 +200,7 @@ class ProductDetailManager {
             return;
         }
 
-        document.title = `${this.currentProduct.name} - ElRinconAzul`;
+        document.title = `${this.currentProduct.name} - Ganesh`;
         document.getElementById('breadcrumb-product').textContent = this.currentProduct.name;
         document.getElementById('main-image').src = this.currentProduct.image;
         document.getElementById('thumb-0').src = this.currentProduct.image;
@@ -261,6 +209,15 @@ class ProductDetailManager {
 
         const description = this.currentProduct.detailedDescription || this.currentProduct.description || 'Sin descripcion disponible.';
         document.getElementById('product-description').textContent = description;
+
+        const wishlistBtn = document.getElementById('btn-wishlist');
+        if (wishlistBtn) {
+            wishlistBtn.dataset.wishlist = this.productId;
+            // Force wishlist re-evaluation from main.js
+            setTimeout(() => {
+                document.dispatchEvent(new CustomEvent('ElRinconAzul:session-changed'));
+            }, 100);
+        }
 
         this.renderRating(Number(this.currentProduct.rating || 4.5), Number(this.currentProduct.reviews || 0));
         this.renderStockStatus(Number(this.currentProduct.stock || 0));
@@ -311,7 +268,7 @@ class ProductDetailManager {
                 <div class="review-item" id="review-${review.id}">
                     <div class="review-meta">
                         <div class="review-author">
-                            <span class="review-user">${review.userName}</span>
+                            <span class="review-user">${escapeHtml(review.userName)}</span>
                             ${review.userRole === 'admin' ? '<span class="admin-badge">Moderador</span>' : ''}
                         </div>
                         <span class="review-date">${new Date(review.date).toLocaleDateString()}</span>
@@ -319,7 +276,7 @@ class ProductDetailManager {
                     <div class="review-stars stars">
                         ${this.generateStarsHTML(review.rating)}
                     </div>
-                    <p class="review-comment">${review.comment}</p>
+                    <p class="review-comment">${escapeHtml(review.comment)}</p>
                     ${this.isAdminSession ? `
                         <div class="admin-review-actions">
                             <button class="btn-delete-review" onclick="productDetail.deleteReview(${review.id})">
@@ -527,7 +484,7 @@ class ProductDetailManager {
                 `SKU: ${this.currentProduct.sku || 'N/A'}`,
             ];
 
-        specsEl.innerHTML = normalizedSpecs.map((spec) => `<li>${spec}</li>`).join('');
+        specsEl.innerHTML = normalizedSpecs.map((spec) => `<li>${escapeHtml(spec)}</li>`).join('');
     }
 
     loadRecommendations() {
@@ -542,11 +499,11 @@ class ProductDetailManager {
             .map((product) => `
                 <a href="product-detail.html?id=${product.id}" class="product-card scroll-reveal" style="text-decoration: none; color: inherit;">
                     <div class="product-image">
-                        <img src="${product.image}" alt="${product.name}" loading="lazy">
+                        <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}" loading="lazy">
                     </div>
                     <div class="product-content">
-                        <h3 class="product-name">${product.name}</h3>
-                        <p class="product-description">${product.description || ''}</p>
+                        <h3 class="product-name">${escapeHtml(product.name)}</h3>
+                        <p class="product-description">${escapeHtml(product.description || '')}</p>
                         <div class="product-price">
                             <span class="product-price-current">S/. ${Number(product.price || 0).toFixed(2)}</span>
                         </div>

@@ -1,4 +1,4 @@
-﻿:root,
+:root,
 :root[data-theme='light'] {
     --bg: #f4f6f8;
     --surface: #ffffff;
@@ -123,6 +123,20 @@ body {
 .grid-form {
     display: grid;
     gap: 0.65rem;
+}
+
+@media (min-width: 650px) {
+    .grid-form {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8rem 1.2rem;
+    }
+
+    .grid-form h3,
+    .grid-form .inline-actions,
+    .grid-form .check-label,
+    .grid-form button[type="submit"]:not(.inline-actions *) {
+        grid-column: span 2;
+    }
 }
 
 .grid-form label {
@@ -338,5 +352,80 @@ th {
 
     .topbar-actions .btn {
         flex: 1;
+    }
+
+    .admin-tabs {
+        flex-wrap: wrap;
+    }
+
+    .admin-tab {
+        flex: 1;
+        min-width: 120px;
+        font-size: 0.82rem;
+        padding: 0.6rem 0.5rem;
+    }
+}
+
+/* ---- Admin Tabs ---- */
+.admin-tabs {
+    display: flex;
+    gap: 0.25rem;
+    border-bottom: 2px solid var(--line);
+    margin-bottom: 1.2rem;
+    padding: 0 0.25rem;
+}
+
+.admin-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.72rem 1.1rem;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.92rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: color 0.2s ease, border-color 0.3s ease, background 0.2s ease;
+    border-radius: 10px 10px 0 0;
+}
+
+.admin-tab svg {
+    flex-shrink: 0;
+    fill: currentColor;
+}
+
+.admin-tab:hover {
+    color: var(--text);
+    background: var(--surface-soft);
+}
+
+.admin-tab.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    background: var(--surface-soft);
+}
+
+.admin-tab-content {
+    display: none;
+    animation: tabFadeIn 0.3s ease;
+}
+
+.admin-tab-content.active {
+    display: block;
+}
+
+@keyframes tabFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }

@@ -1,4 +1,4 @@
-# 📚 Guía de Implementación Completa - ElRinconAzul 2026
+# 📚 Guía de Implementación Completa - Ganesh 2026
 
 ## 🎯 Estructura del Proyecto
 
@@ -55,7 +55,7 @@ tienda_virtual/
 cd d:\tienda_virtual
 git init
 git add .
-git commit -m "Initial commit: ElRinconAzul 2026"
+git commit -m "Initial commit: Ganesh 2026"
 ```
 
 #### 2️⃣ Configurar Backend
@@ -79,7 +79,7 @@ cp .env.example .env
 #### 3️⃣ Iniciar MongoDB
 
 ```bash
-# Windows - si MongoDB está instalado localm:
+# Windows - si MongoDB está instalado local:
 mongod
 
 # Alternativa: Usar MongoDB Atlas (cloud)
@@ -99,7 +99,7 @@ npm run dev
 
 # Output esperado:
 # ╔════════════════════════════════════════╗
-# ║     🌟 ElRinconAzul Backend 2026 🌟      ║
+# ║     🌟 Ganesh Backend 2026 🌟      ║
 # ╠════════════════════════════════════════╣
 # ║ Status: ✅ Running                     ║
 # ║ Server: localhost:5000                 ║

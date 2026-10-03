@@ -1,10 +1,11 @@
 const API_BASE = window.API_BASE || 'http://localhost:5000';
 
 const state = {
-  token: localStorage.getItem('adminAuthToken') || '',
+  token: '',
   currentUser: null,
   users: [],
   products: [],
+  categories: [],
 };
 
 const els = {
@@ -18,14 +19,24 @@ const els = {
   usersTbody: document.getElementById('users-tbody'),
   createForm: document.getElementById('create-user-form'),
   createName: document.getElementById('create-name'),
+  createLastName: document.getElementById('create-last-name'),
+  createNickname: document.getElementById('create-nickname'),
   createEmail: document.getElementById('create-email'),
+  createPhone: document.getElementById('create-phone'),
+  createAddress: document.getElementById('create-address'),
+  createAvatarUrl: document.getElementById('create-avatar-url'),
   createPassword: document.getElementById('create-password'),
   createRole: document.getElementById('create-role'),
   createPremium: document.getElementById('create-premium'),
   editForm: document.getElementById('edit-user-form'),
   editId: document.getElementById('edit-id'),
   editName: document.getElementById('edit-name'),
+  editLastName: document.getElementById('edit-last-name'),
+  editNickname: document.getElementById('edit-nickname'),
   editEmail: document.getElementById('edit-email'),
+  editPhone: document.getElementById('edit-phone'),
+  editAddress: document.getElementById('edit-address'),
+  editAvatarUrl: document.getElementById('edit-avatar-url'),
   editPassword: document.getElementById('edit-password'),
   editRole: document.getElementById('edit-role'),
   editPremium: document.getElementById('edit-premium'),
@@ -56,6 +67,15 @@ const els = {
   productEditBadgeNuevo: document.getElementById('product-edit-badge-nuevo'),
   productEditBadgeEdicion: document.getElementById('product-edit-badge-edicion'),
   cancelProductEdit: document.getElementById('cancel-product-edit'),
+  refreshCategories: document.getElementById('refresh-categories'),
+  categoryForm: document.getElementById('category-form'),
+  categoryFormTitle: document.getElementById('category-form-title'),
+  categoryIdHidden: document.getElementById('category-id-hidden'),
+  categoryId: document.getElementById('category-id'),
+  categoryName: document.getElementById('category-name'),
+  categorySubmit: document.getElementById('category-submit'),
+  cancelCategoryEdit: document.getElementById('cancel-category-edit'),
+  categoriesTbody: document.getElementById('categories-tbody'),
   toast: document.getElementById('toast'),
 };
 
@@ -96,9 +116,7 @@ async function api(path, options = {}, useAuth = true) {
     ...(options.headers || {}),
   };
 
-  if (useAuth && state.token) {
-    headers.Authorization = `Bearer ${state.token}`;
-  }
+  // Authentication is performed via HttpOnly cookie (credentials). Do not add Authorization header here.
 
   const response = await fetch(`${API_BASE}${path}`, {
     ...options,
@@ -131,15 +149,10 @@ function setAuthenticatedUI(isAuthenticated) {
 
 function persistToken(token) {
   state.token = token || '';
-  if (state.token) {
-    localStorage.setItem('adminAuthToken', state.token);
-  } else {
-    localStorage.removeItem('adminAuthToken');
-  }
 }
 
 async function loadDashboardData() {
-  await Promise.all([loadUsers(), loadProducts()]);
+  await Promise.all([loadUsers(), loadProducts(), loadCategories()]);
 }
 
 async function login(email, password) {
@@ -156,7 +169,8 @@ async function login(email, password) {
     throw new Error('Este panel es solo para administradores');
   }
 
-  persistToken(data.token);
+  // Server sets HttpOnly auth cookie. Persist minimal client state.
+  persistToken('');
   state.currentUser = data.user;
   setAuthenticatedUI(true);
   notify('Sesion iniciada como admin');
@@ -179,13 +193,8 @@ async function logout() {
 }
 
 async function bootstrapAuth() {
-  if (!state.token) {
-    setAuthenticatedUI(false);
-    return;
-  }
-
   try {
-    const data = await api('/api/v1/me');
+    const data = await api('/api/v1/me', {}, false);
     if (!data.user || data.user.role !== 'admin') {
       throw new Error('Sin permisos de admin');
     }
@@ -239,7 +248,12 @@ function clearEditForm() {
   els.editForm.classList.add('hidden');
   els.editId.value = '';
   els.editName.value = '';
+  els.editLastName.value = '';
+  els.editNickname.value = '';
   els.editEmail.value = '';
+  els.editPhone.value = '';
+  els.editAddress.value = '';
+  els.editAvatarUrl.value = '';
   els.editPassword.value = '';
   els.editRole.value = 'user';
   els.editPremium.checked = false;
@@ -301,7 +315,12 @@ function startEditUser(userId) {
 
   els.editId.value = String(user.id);
   els.editName.value = user.name;
+  els.editLastName.value = user.last_name || '';
+  els.editNickname.value = user.nickname || '';
   els.editEmail.value = user.email;
+  els.editPhone.value = user.phone || '';
+  els.editAddress.value = user.address || '';
+  els.editAvatarUrl.value = user.avatar_url || '';
   els.editPassword.value = '';
   els.editRole.value = user.role;
   els.editPremium.checked = !!user.isPremium;
@@ -314,7 +333,12 @@ async function createUser(event) {
 
   const payload = {
     name: els.createName.value.trim(),
+    last_name: els.createLastName.value.trim(),
+    nickname: els.createNickname.value.trim(),
     email: els.createEmail.value.trim(),
+    phone: els.createPhone.value.trim(),
+    address: els.createAddress.value.trim(),
+    avatar_url: els.createAvatarUrl.value.trim(),
     password: els.createPassword.value,
     role: els.createRole.value,
     isPremium: els.createPremium.checked,
@@ -336,7 +360,12 @@ async function updateUser(event) {
   const id = Number(els.editId.value);
   const payload = {
     name: els.editName.value.trim(),
+    last_name: els.editLastName.value.trim(),
+    nickname: els.editNickname.value.trim(),
     email: els.editEmail.value.trim(),
+    phone: els.editPhone.value.trim(),
+    address: els.editAddress.value.trim(),
+    avatar_url: els.editAvatarUrl.value.trim(),
     role: els.editRole.value,
     isPremium: els.editPremium.checked,
   };
@@ -386,11 +415,14 @@ function renderProducts() {
 
   state.products.forEach((product) => {
     const tr = document.createElement('tr');
+    const categoryObj = state.categories.find(c => c.id === product.category);
+    const categoryName = categoryObj ? categoryObj.name : (product.category || '');
+
     tr.innerHTML = `
       <td>${product.id}</td>
       <td>${escapeHtml(product.sku || '')}</td>
       <td>${escapeHtml(product.name || '')}</td>
-      <td>${escapeHtml(product.category || '')}</td>
+      <td>${escapeHtml(categoryName)}</td>
       <td>S/. ${Number(product.price || 0).toFixed(2)}</td>
       <td>${Number(product.stock || 0)}</td>
       <td><span class="badge ${product.isPremium ? 'premium' : 'normal'}">${product.isPremium ? 'Premium' : 'Normal'}</span></td>
@@ -402,6 +434,109 @@ function renderProducts() {
     `;
     els.productsTbody.appendChild(tr);
   });
+}
+
+function updateCategorySelects() {
+  const selects = [els.createProductCategory, els.productEditCategory];
+  selects.forEach(select => {
+    if (!select) return;
+    const currentValue = select.value;
+    select.innerHTML = '<option value="">Seleccione categoría...</option>';
+    state.categories.forEach(cat => {
+      const option = document.createElement('option');
+      option.value = cat.id;
+      option.textContent = cat.name;
+      select.appendChild(option);
+    });
+    select.value = currentValue;
+  });
+}
+
+function renderCategories() {
+  if (!els.categoriesTbody) return;
+  els.categoriesTbody.innerHTML = '';
+
+  state.categories.forEach((cat) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${escapeHtml(cat.id)}</td>
+      <td>${escapeHtml(cat.name)}</td>
+      <td>
+        <div class="row-actions">
+          <button type="button" data-action="edit-category" data-id="${cat.id}">Editar</button>
+          <button type="button" class="delete" data-action="delete-category" data-id="${cat.id}">Eliminar</button>
+        </div>
+      </td>
+    `;
+    els.categoriesTbody.appendChild(tr);
+  });
+
+  updateCategorySelects();
+}
+
+async function loadCategories() {
+  const data = await api('/api/v1/categories', {}, false);
+  state.categories = data.data || [];
+  renderCategories();
+}
+
+function clearCategoryForm() {
+  if (!els.categoryForm) return;
+  els.categoryForm.reset();
+  els.categoryIdHidden.value = '';
+  els.categoryId.disabled = false;
+  els.categoryFormTitle.textContent = 'Crear Categoría';
+  els.categorySubmit.textContent = 'Crear';
+  els.cancelCategoryEdit.classList.add('hidden');
+}
+
+function startEditCategory(catId) {
+  const cat = state.categories.find(c => c.id === catId);
+  if (!cat) return;
+
+  els.categoryIdHidden.value = cat.id;
+  els.categoryId.value = cat.id;
+  els.categoryId.disabled = true;
+  els.categoryName.value = cat.name;
+  els.categoryFormTitle.textContent = 'Editar Categoría';
+  els.categorySubmit.textContent = 'Guardar';
+  els.cancelCategoryEdit.classList.remove('hidden');
+  
+  switchTab('categories');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function saveCategory(event) {
+  event.preventDefault();
+  const hiddenId = els.categoryIdHidden.value;
+  const id = els.categoryId.value.trim();
+  const name = els.categoryName.value.trim();
+
+  if (hiddenId) {
+    // Update
+    await api(`/api/v1/categories/${hiddenId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ name })
+    });
+    notify('Categoría actualizada');
+  } else {
+    // Create
+    await api('/api/v1/categories', {
+      method: 'POST',
+      body: JSON.stringify({ id, name })
+    });
+    notify('Categoría creada');
+  }
+
+  clearCategoryForm();
+  await loadCategories();
+}
+
+async function deleteCategory(catId) {
+  if (!window.confirm(`¿Eliminar la categoría "${catId}"?`)) return;
+  await api(`/api/v1/categories/${catId}`, { method: 'DELETE' });
+  notify('Categoría eliminada');
+  await loadCategories();
 }
 
 async function loadProducts() {
@@ -565,6 +700,33 @@ function bindEvents() {
     });
   }
 
+  if (els.refreshCategories) {
+    els.refreshCategories.addEventListener('click', async () => {
+      try {
+        await loadCategories();
+        notify('Categorías actualizadas');
+      } catch (error) {
+        notify(error.message, true);
+      }
+    });
+  }
+
+  if (els.categoryForm) {
+    els.categoryForm.addEventListener('submit', async (event) => {
+      try {
+        await saveCategory(event);
+      } catch (error) {
+        notify(error.message, true);
+      }
+    });
+  }
+
+  if (els.cancelCategoryEdit) {
+    els.cancelCategoryEdit.addEventListener('click', () => {
+      clearCategoryForm();
+    });
+  }
+
   if (els.editForm) {
     els.editForm.addEventListener('submit', async (event) => {
       try {
@@ -630,11 +792,46 @@ function bindEvents() {
       }
     });
   }
+
+  if (els.categoriesTbody) {
+    els.categoriesTbody.addEventListener('click', async (event) => {
+      const btn = event.target.closest('button[data-action]');
+      if (!btn) return;
+
+      const action = btn.dataset.action;
+      const catId = btn.dataset.id;
+
+      try {
+        if (action === 'edit-category') startEditCategory(catId);
+        if (action === 'delete-category') await deleteCategory(catId);
+      } catch (error) {
+        notify(error.message, true);
+      }
+    });
+  }
+}
+
+function switchTab(tabName) {
+  document.querySelectorAll('.admin-tab').forEach((tab) => {
+    tab.classList.toggle('active', tab.dataset.tab === tabName);
+  });
+  document.querySelectorAll('.admin-tab-content').forEach((content) => {
+    content.classList.toggle('active', content.id === `tab-${tabName}`);
+  });
+}
+
+function bindTabEvents() {
+  document.querySelectorAll('.admin-tab').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      switchTab(tab.dataset.tab);
+    });
+  });
 }
 
 (async function init() {
   removeUnexpectedProductDetailEditor();
   bindEvents();
+  bindTabEvents();
   await bootstrapAuth();
 })();
 

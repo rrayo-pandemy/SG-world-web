@@ -1,4 +1,4 @@
-# 🚀 Deployment - ElRinconAzul
+# 🚀 Deployment - Ganesh
 
 Este documento completa la **FASE 4 (Testing y Deployment)** del checklist.
 

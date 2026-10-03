@@ -1,6 +1,6 @@
 =============================================
 INSTALACION DEL BACKEND - GUIA ACTUALIZADA
-Proyecto: ElRinconAzul
+Proyecto: Ganesh
 Actualizado: 2026-04-06
 =============================================
 

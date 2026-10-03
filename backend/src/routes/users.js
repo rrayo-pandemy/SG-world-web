@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
-const { getUsers, saveUsers } = require('../services/store');
+const { getUsers, saveUsers, getUsersAsync, saveUsersAsync } = require('../services/store');
 const { authRequired, adminRequired } = require('../middleware/auth');
 
 const router = express.Router();
@@ -11,7 +11,7 @@ const allowedRoles = new Set(['admin', 'user', 'customer']);
 function normalizeRole(role) {
   const normalized = String(role || '').trim().toLowerCase();
   if (allowedRoles.has(normalized)) return normalized;
-  return 'customer';
+  return 'user';
 }
 
 function toPublicUser(user) {
@@ -19,15 +19,20 @@ function toPublicUser(user) {
     id: user.id,
     name: user.name,
     email: user.email,
-    role: user.role || 'customer',
+    role: user.role || 'user',
     isPremium: Boolean(user.isPremium),
+    last_name: user.last_name || '',
+    nickname: user.nickname || '',
+    phone: user.phone || '',
+    avatar_url: user.avatar_url || '',
+    address: user.address || '',
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };
 }
 
-router.get('/', authRequired, adminRequired, (req, res) => {
-  const users = getUsers();
+router.get('/', authRequired, adminRequired, async (req, res) => {
+  const users = await getUsersAsync();
   return res.json({ success: true, count: users.length, data: users.map(toPublicUser) });
 });
 
@@ -37,8 +42,15 @@ router.post(
   adminRequired,
   [
     body('name').trim().isLength({ min: 2 }).withMessage('Nombre invalido'),
+    body('last_name').trim().notEmpty().withMessage('Apellido es obligatorio'),
+    body('phone').trim().notEmpty().withMessage('Telefono es obligatorio'),
+    body('address').trim().notEmpty().withMessage('Direccion es obligatoria'),
     body('email').isEmail().normalizeEmail().withMessage('Email invalido'),
-    body('password').isLength({ min: 8 }).withMessage('Password debe tener al menos 8 caracteres'),
+    body('password')
+      .isLength({ min: 9 }).withMessage('La contraseña debe tener al menos 9 caracteres')
+      .matches(/[A-Z]/).withMessage('La contraseña debe incluir al menos una mayúscula')
+      .matches(/\d/).withMessage('La contraseña debe incluir al menos un número')
+      .matches(/[!@#$%^&*(),.?":{}|<>]/).withMessage('La contraseña debe incluir al menos un carácter especial'),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -46,7 +58,7 @@ router.post(
       return res.status(400).json({ success: false, errors: errors.array() });
     }
 
-    const users = getUsers();
+    const users = await getUsersAsync();
     const email = String(req.body.email || '').toLowerCase();
 
     if (users.some((u) => u.email === email)) {
@@ -59,6 +71,11 @@ router.post(
     const user = {
       id: nextId,
       name: String(req.body.name || '').trim(),
+      last_name: String(req.body.last_name || '').trim(),
+      nickname: String(req.body.nickname || '').trim(),
+      phone: String(req.body.phone || '').trim(),
+      address: String(req.body.address || '').trim(),
+      avatar_url: String(req.body.avatar_url || '').trim(),
       email,
       passwordHash,
       role: normalizeRole(req.body.role),
@@ -67,14 +84,14 @@ router.post(
     };
 
     users.push(user);
-    saveUsers(users);
+    await saveUsersAsync(users);
     return res.status(201).json({ success: true, data: toPublicUser(user) });
   }
 );
 
 router.put('/:id', authRequired, adminRequired, async (req, res) => {
   const id = Number(req.params.id);
-  const users = getUsers();
+  const users = await getUsersAsync();
   const index = users.findIndex((u) => u.id === id);
 
   if (index === -1) {
@@ -91,6 +108,11 @@ router.put('/:id', authRequired, adminRequired, async (req, res) => {
   const nextUser = {
     ...current,
     name: req.body.name ? String(req.body.name).trim() : current.name,
+    last_name: req.body.last_name !== undefined ? String(req.body.last_name).trim() : current.last_name,
+    nickname: req.body.nickname !== undefined ? String(req.body.nickname).trim() : current.nickname,
+    phone: req.body.phone !== undefined ? String(req.body.phone).trim() : current.phone,
+    address: req.body.address !== undefined ? String(req.body.address).trim() : current.address,
+    avatar_url: req.body.avatar_url !== undefined ? String(req.body.avatar_url).trim() : current.avatar_url,
     email: nextEmail,
     role: req.body.role ? normalizeRole(req.body.role) : current.role,
     isPremium: Object.prototype.hasOwnProperty.call(req.body, 'isPremium')
@@ -104,13 +126,13 @@ router.put('/:id', authRequired, adminRequired, async (req, res) => {
   }
 
   users[index] = nextUser;
-  saveUsers(users);
+  await saveUsersAsync(users);
   return res.json({ success: true, data: toPublicUser(nextUser) });
 });
 
-router.patch('/:id/premium', authRequired, adminRequired, (req, res) => {
+router.patch('/:id/premium', authRequired, adminRequired, async (req, res) => {
   const id = Number(req.params.id);
-  const users = getUsers();
+  const users = await getUsersAsync();
   const index = users.findIndex((u) => u.id === id);
 
   if (index === -1) {
@@ -123,20 +145,20 @@ router.patch('/:id/premium', authRequired, adminRequired, (req, res) => {
     updatedAt: new Date().toISOString(),
   };
 
-  saveUsers(users);
+  await saveUsersAsync(users);
   return res.json({ success: true, data: toPublicUser(users[index]) });
 });
 
-router.delete('/:id', authRequired, adminRequired, (req, res) => {
+router.delete('/:id', authRequired, adminRequired, async (req, res) => {
   const id = Number(req.params.id);
-  const users = getUsers();
+  const users = await getUsersAsync();
   const next = users.filter((u) => u.id !== id);
 
   if (next.length === users.length) {
     return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
   }
 
-  saveUsers(next);
+  await saveUsersAsync(next);
   return res.json({ success: true, message: 'Usuario eliminado' });
 });
 

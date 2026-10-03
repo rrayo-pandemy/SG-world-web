@@ -1,5 +1,5 @@
 <!-- ════════════════════════════════════════════════════════════════════════════
-     PRODUCT DETAIL PAGE - ElRinconAzul
+     PRODUCT DETAIL PAGE - Ganesh
      Página de detalle individual de producto con recomendaciones cruzadas
      ════════════════════════════════════════════════════════════════════════════ -->
 
@@ -9,7 +9,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Detalle del producto - ElRinconAzul">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta name="description" content="Detalle del producto - Ganesh">
     <meta name="theme-color" content="#0b3c5d">
     <script>
         (function () {
@@ -22,16 +23,38 @@
         })();
     </script>
     <script>
-        window.API_BASE = window.location.origin;
-        if (window.location.port === '8000') {
-            // Asegura que las llamadas a la API funcionen desde otros dispositivos en la red local
-            window.API_BASE = window.location.protocol + '//' + window.location.hostname + ':5000';
-        }
+        // Configuración de API dinámica para LAN/WAN
+        (function() {
+            function normalizeApiBase(value) {
+                if (!value) return '';
+                try {
+                    var parsed = new URL(value.trim());
+                    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return '';
+                    return parsed.origin;
+                } catch (e) {
+                    return '';
+                }
+            }
+
+            var urlParams = new URLSearchParams(window.location.search);
+            var apiOverride = normalizeApiBase(urlParams.get('api'));
+            if (!apiOverride && /^\?https?:\/\//i.test(window.location.search)) {
+                apiOverride = normalizeApiBase(window.location.search.slice(1));
+            }
+            if (apiOverride) {
+                localStorage.setItem('wan_api_base', apiOverride);
+            }
+            var savedWanApi = normalizeApiBase(localStorage.getItem('wan_api_base'));
+            window.API_BASE = savedWanApi || window.location.origin;
+            if (!savedWanApi && window.location.port === '8000') {
+                window.API_BASE = window.location.protocol + '//' + window.location.hostname + ':5000';
+            }
+        })();
     </script>
-    <title>ElRinconAzul - Detalle de Producto</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/product-detail.css">
-    <link rel="stylesheet" href="css/accessibility.css">
+    <title>Ganesh - Detalle de Producto</title>
+    <link rel="stylesheet" href="css/styles.css?v=2.1">
+    <link rel="stylesheet" href="css/product-detail.css?v=2.1">
+    <link rel="stylesheet" href="css/accessibility.css?v=2.1">
 </head>
 
 <body>
@@ -52,16 +75,23 @@
                             </linearGradient>
                         </defs>
                     </svg>
-                    <span class="logo-text">ElRinconAzul</span>
+                    <span class="logo-text">Ganesh</span>
                 </a>
             </div>
 
             <nav class="nav" role="navigation" aria-label="Menú principal">
                 <ul class="nav__list">
-                    <li><a href="http://localhost:8000/" class="nav__link">Inicio</a></li>
-                    <li><a href="http://localhost:8000/#productos" class="nav__link">Productos</a></li>
-                    <li><a href="http://localhost:8000/#como-comprar" class="nav__link">Cómo Comprar</a></li>
-                    <li><a href="http://localhost:8000/#sobre-nosotros" class="nav__link">Sobre Nosotros</a></li>
+                    <li><a href="index.html" class="nav__link">Inicio</a></li>
+                    <li class="nav-mobile-only" data-auth-panel hidden><a href="profile.html" class="nav__link">Mi Perfil</a></li>
+                    <li class="nav-mobile-only" data-auth-panel hidden><a href="#" class="nav__link" data-auth-logout>Cerrar Sesión</a></li>
+                    <li class="nav__item nav__item--dropdown">
+                        <a href="index.html#productos" class="nav__link" aria-haspopup="true" aria-expanded="false">Productos</a>
+                        <ul class="nav__dropdown" aria-label="Categorias de productos">
+                            <li><a href="index.html#productos" class="nav__dropdown-link" data-filter="all">Todos</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="index.html#como-comprar" class="nav__link">Cómo Comprar</a></li>
+                    <li><a href="index.html#about" class="nav__link">Sobre Nosotros</a></li>
                 </ul>
             </nav>
 
@@ -81,6 +111,7 @@
                         <span class="header-account__name" data-auth-name>Cliente</span>
                         <span class="header-account__cart" data-auth-cart>Carrito: 0 productos</span>
                     </div>
+                    <a href="profile.html" class="btn btn--secondary btn--header-cta header-profile-link">Mi Perfil</a>
                 </div>
                 <button class="header-account__logout" data-auth-logout data-auth-panel type="button" hidden>Cerrar
                     sesion</button>
@@ -102,7 +133,7 @@
     <div id="premium-login-modal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="modal-title">
         <div class="modal__overlay"></div>
         <div class="modal__panel" role="document">
-            <button class="modal__close" aria-label="Cerrar dialogo">&times;</button>
+            <button class="modal__close" aria-label="Cerrar dialogo"><span class="close-icon">&times;</span></button>
             <h2 id="modal-title" class="modal__title">Acceso</h2>
             <p class="modal__subtitle">Inicia sesión para habilitar todas las funciones.</p>
             <form id="premium-login-form" class="modal__form">
@@ -127,7 +158,13 @@
     <div id="signup-modal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="signup-modal-title">
         <div class="modal__overlay"></div>
         <div class="modal__panel" role="document">
-            <button class="modal__close" aria-label="Cerrar dialogo">&times;</button>
+            <button class="modal__back" aria-label="Volver al acceso">
+                <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor"
+                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 18l-6-6 6-6" />
+                </svg>
+            </button>
+            <button class="modal__close" aria-label="Cerrar dialogo"><span class="close-icon">&times;</span></button>
             <h2 id="signup-modal-title" class="modal__title">Crear cuenta</h2>
             <p class="modal__subtitle">Registrate para guardar pedidos y continuar compras.</p>
             <form id="signup-form" class="modal__form">
@@ -141,7 +178,7 @@
                 </div>
                 <div class="form-group">
                     <label for="signup-password">Contrasena</label>
-                    <input type="password" id="signup-password" name="password" placeholder="Minimo 8 caracteres"
+                    <input type="password" id="signup-password" name="password" placeholder="Min. 9 chars: Aa1@..."
                         required>
                 </div>
                 <div class="form-group">
@@ -195,7 +232,7 @@
         </nav>
 
         <!-- Product Detail Section -->
-        <section class="product-detail">
+        <section class="product-detail" style="position: relative;">
             <div class="container">
                 <div class="product-detail__grid">
                     <!-- Product Images -->
@@ -262,7 +299,8 @@
                                 <span class="btn__arrow">→</span>
                             </button>
 
-                            <button class="btn-wishlist" id="btn-wishlist" title="Añadir a favoritos"><span class="heart">♡</span></button>
+                            <button class="btn-wishlist" id="btn-wishlist" title="Añadir a favoritos"><span
+                                    class="heart">♡</span></button>
                         </div>
 
                         <!-- Product Details -->
@@ -284,7 +322,8 @@
                     <h2>Reseñas de Clientes</h2>
                     <div class="product-reviews__summary">
                         <div class="stars stars--large" id="avg-rating-stars">
-                            <span class="star">☆</span><span class="star">☆</span><span class="star">☆</span><span class="star">☆</span><span class="star">☆</span>
+                            <span class="star">☆</span><span class="star">☆</span><span class="star">☆</span><span
+                                class="star">☆</span><span class="star">☆</span>
                         </div>
                         <span class="rating-value" id="avg-rating-value">0.0</span>
                         <span class="rating-count" id="total-reviews-count">(0 reseñas)</span>
@@ -304,16 +343,22 @@
                                 <div class="form-group">
                                     <label>Tu calificación:</label>
                                     <div class="star-rating-input">
-                                        <input type="radio" name="rating" value="5" id="star-5" required><label for="star-5" title="5 estrellas">★</label>
-                                        <input type="radio" name="rating" value="4" id="star-4"><label for="star-4" title="4 estrellas">★</label>
-                                        <input type="radio" name="rating" value="3" id="star-3"><label for="star-3" title="3 estrellas">★</label>
-                                        <input type="radio" name="rating" value="2" id="star-2"><label for="star-2" title="2 estrellas">★</label>
-                                        <input type="radio" name="rating" value="1" id="star-1"><label for="star-1" title="1 estrella">★</label>
+                                        <input type="radio" name="rating" value="5" id="star-5" required><label
+                                            for="star-5" title="5 estrellas">★</label>
+                                        <input type="radio" name="rating" value="4" id="star-4"><label for="star-4"
+                                            title="4 estrellas">★</label>
+                                        <input type="radio" name="rating" value="3" id="star-3"><label for="star-3"
+                                            title="3 estrellas">★</label>
+                                        <input type="radio" name="rating" value="2" id="star-2"><label for="star-2"
+                                            title="2 estrellas">★</label>
+                                        <input type="radio" name="rating" value="1" id="star-1"><label for="star-1"
+                                            title="1 estrella">★</label>
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="review-comment">Tu comentario:</label>
-                                    <textarea id="review-comment" rows="4" placeholder="Cuéntanos qué te pareció el producto..." required></textarea>
+                                    <textarea id="review-comment" rows="4"
+                                        placeholder="Cuéntanos qué te pareció el producto..." required></textarea>
                                 </div>
                                 <div id="review-form-status" class="form-status"></div>
                                 <button type="submit" class="btn btn--primary">Publicar Reseña</button>
@@ -322,7 +367,7 @@
                         <div id="review-form-guest">
                             <div class="guest-card">
                                 <h3>¿Te gustó este producto?</h3>
-                                <p>Inicia sesión para compartir tu experiencia con otros clientes.</p>
+                                <p>Inicia sesión para compartir tu experiencia con otros usuarios.</p>
                                 <button class="btn btn--secondary premium-login">Iniciar Sesión / Registrarme</button>
                             </div>
                         </div>
@@ -367,7 +412,7 @@
     <footer class="footer" role="contentinfo">
         <div class="footer-content">
             <div class="footer-section">
-                <h4>ElRinconAzul</h4>
+                <h4>Ganesh</h4>
                 <p>Tienda online de productos curados y premium.</p>
             </div>
             <div class="footer-section">
@@ -390,11 +435,12 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2026 ElRinconAzul. Todos los derechos reservados.</p>
+            <p>&copy; 2026 Ganesh. Todos los derechos reservados.</p>
         </div>
     </footer>
 
     <!-- Scripts -->
+    <script src="js/api-config.js"></script>
     <script src="js/theme-manager.js"></script>
     <script src="js/session.js"></script>
     <script src="js/main.js"></script>

@@ -1,18 +1,31 @@
-﻿const jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
+
+// Enforce presence of JWT_SECRET to avoid using weak defaults
+if (!process.env.JWT_SECRET) {
+  throw new Error('Environment variable JWT_SECRET is required. Set JWT_SECRET before starting the server.');
+}
+
+function extractToken(req) {
+  const authHeader = req.headers.authorization || '';
+  if (authHeader.startsWith('Bearer ')) return authHeader.slice(7);
+  if (req && req.cookies && req.cookies.auth_token) return req.cookies.auth_token;
+  return null;
+}
 
 function authRequired(req, res, next) {
-  const authHeader = req.headers.authorization || '';
-  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  const token = extractToken(req);
 
   if (!token) {
     return res.status(401).json({ success: false, message: 'Token requerido' });
   }
 
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET || 'dev_secret_change_me');
+    const secret = process.env.JWT_SECRET;
+    const payload = jwt.verify(token, secret);
     req.user = payload;
     return next();
   } catch (error) {
+    console.error('[Auth] Token verification failed');
     return res.status(401).json({ success: false, message: 'Token invalido' });
   }
 }

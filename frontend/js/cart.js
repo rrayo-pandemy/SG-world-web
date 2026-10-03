@@ -116,32 +116,16 @@ class ShoppingCart {
     }
 
     getApiBaseCandidates() {
-        const candidates = [];
-        const addCandidate = (value) => {
-            if (typeof value !== 'string') return;
-            const normalized = value.trim().replace(/\/$/, '');
-            if (!normalized && normalized !== '') return;
-            if (!candidates.includes(normalized)) candidates.push(normalized);
-        };
-
-        if (typeof window.API_BASE === 'string' && window.API_BASE.trim()) {
-            addCandidate(window.API_BASE);
-        }
-
-        addCandidate('');
-        addCandidate('http://localhost:5000');
-        addCandidate('http://localhost:3000');
-        return candidates;
+        return window.ApiConfig ? window.ApiConfig.getBaseCandidates() : ['', 'http://localhost:5000', 'http://localhost:3000'];
     }
 
     buildApiUrl(base, path) {
-        if (/^https?:\/\//i.test(path)) return path;
-        return base ? `${base}${path}` : path;
+        return window.ApiConfig ? window.ApiConfig.buildUrl(base, path) : (base ? `${base}${path}` : path);
     }
 
     getAuthToken() {
         try {
-            return localStorage.getItem('authToken') || '';
+            return '';
         } catch (_error) {
             return '';
         }
@@ -164,12 +148,13 @@ class ShoppingCart {
     }
 
     isAuthenticated() {
-        return Boolean(this.getAuthToken() && this.getCurrentUserId());
+        return window.sessionManager && typeof window.sessionManager.isAuthenticated === 'function'
+            ? window.sessionManager.isAuthenticated()
+            : Boolean(this.getCurrentUserId());
     }
 
     getAuthHeaders() {
-        const token = this.getAuthToken();
-        return token ? { Authorization: `Bearer ${token}` } : {};
+        return {};
     }
 
     // Add item to cart
@@ -260,9 +245,9 @@ class ShoppingCart {
             try {
                 const response = await fetch(this.buildApiUrl(base, path), {
                     ...options,
+                    credentials: 'include',
                     headers: {
                         ...(options.headers || {}),
-                        ...this.getAuthHeaders(),
                     },
                 });
 
@@ -508,39 +493,89 @@ class ShoppingCart {
             `;
             return;
         }
+            // Build DOM nodes safely for each cart item
+            this.cartItemsContainer.innerHTML = '';
+            const frag = document.createDocumentFragment();
+            this.cart.forEach((item) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'cart-item';
 
-        this.cartItemsContainer.innerHTML = this.cart.map(item => `
-            <div class="cart-item">
-                <div class="cart-item-image" style="background: url('${item.image}') center/cover;"></div>
-                <div class="cart-item-detail">
-                    <h4>${item.name}</h4>
-                    <div class="cart-item-price">${formatCurrency(item.price)}</div>
-                    <div class="cart-item-actions">
-                        <div class="qty-control">
-                            <button onclick="cartManager.updateQuantity(${item.id}, ${item.quantity - 1})">−</button>
-                            <input
-                                type="text"
-                                inputmode="numeric"
-                                pattern="[0-9]*"
-                                value="${item.quantity}"
-                                aria-label="Cantidad de ${item.name}"
-                                oninput="cartManager.handleQuantityInput(this)"
-                                onblur="cartManager.commitQuantity(${item.id}, this)"
-                                onkeydown="if(event.key === 'Enter'){ event.preventDefault(); this.blur(); }"
-                            >
-                            <button onclick="cartManager.updateQuantity(${item.id}, ${item.quantity + 1})">+</button>
-                        </div>
-                        <button 
-                            onclick="cartManager.removeFromCart(${item.id})"
-                            style="background: none; color: var(--color-text-light); font-size: 1.2rem; cursor: pointer;"
-                            title="Eliminar"
-                        >
-                            🗑️
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `).join('');
+                const imgWrap = document.createElement('div');
+                imgWrap.className = 'cart-item-image';
+                // Use an <img> to avoid CSS url injection
+                const img = document.createElement('img');
+                img.alt = item.name || '';
+                img.src = (item.image && (String(item.image).startsWith('http') || String(item.image).startsWith('/'))) ? item.image : 'https://via.placeholder.com/80x80?text=Img';
+                img.style.width = '80px';
+                img.style.height = '80px';
+                img.style.objectFit = 'cover';
+                imgWrap.appendChild(img);
+
+                const detail = document.createElement('div');
+                detail.className = 'cart-item-detail';
+
+                const title = document.createElement('h4');
+                title.textContent = item.name || '';
+
+                const price = document.createElement('div');
+                price.className = 'cart-item-price';
+                price.textContent = formatCurrency(item.price);
+
+                const actions = document.createElement('div');
+                actions.className = 'cart-item-actions';
+
+                const qtyControl = document.createElement('div');
+                qtyControl.className = 'qty-control';
+
+                const btnDec = document.createElement('button');
+                btnDec.textContent = '−';
+                btnDec.addEventListener('click', () => this.updateQuantity(item.id, Math.max(0, item.quantity - 1)));
+
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.inputMode = 'numeric';
+                input.pattern = '[0-9]*';
+                input.value = String(item.quantity);
+                input.setAttribute('aria-label', `Cantidad de ${item.name}`);
+                input.addEventListener('input', () => this.handleQuantityInput(input));
+                input.addEventListener('blur', () => this.commitQuantity(item.id, input));
+                input.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        input.blur();
+                    }
+                });
+
+                const btnInc = document.createElement('button');
+                btnInc.textContent = '+';
+                btnInc.addEventListener('click', () => this.updateQuantity(item.id, item.quantity + 1));
+
+                qtyControl.appendChild(btnDec);
+                qtyControl.appendChild(input);
+                qtyControl.appendChild(btnInc);
+
+                const btnRemove = document.createElement('button');
+                btnRemove.title = 'Eliminar';
+                btnRemove.style.background = 'none';
+                btnRemove.style.color = 'var(--color-text-light)';
+                btnRemove.style.fontSize = '1.2rem';
+                btnRemove.style.cursor = 'pointer';
+                btnRemove.textContent = '🗑️';
+                btnRemove.addEventListener('click', () => this.removeFromCart(item.id));
+
+                actions.appendChild(qtyControl);
+                actions.appendChild(btnRemove);
+
+                detail.appendChild(title);
+                detail.appendChild(price);
+                detail.appendChild(actions);
+
+                wrapper.appendChild(imgWrap);
+                wrapper.appendChild(detail);
+                frag.appendChild(wrapper);
+            });
+
+            this.cartItemsContainer.appendChild(frag);
     }
 
     // Update cart summary

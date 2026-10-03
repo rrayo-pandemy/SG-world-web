@@ -1,7 +1,9 @@
+import json
 import os
 import re
 import sqlite3
 import time
+import uuid
 from datetime import datetime, timedelta, timezone
 from functools import wraps
 from pathlib import Path
@@ -14,6 +16,8 @@ BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / 'data'
 DB_PATH = DATA_DIR / 'ElRinconAzul_app.sqlite3'
 FRONTEND_DIR = (BASE_DIR.parent / 'frontend').resolve()
+UPLOADS_DIR = FRONTEND_DIR / 'uploads' / 'avatars'
+ALLOWED_AVATAR_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
 
 JWT_SECRET = os.getenv('JWT_SECRET', 'change_this_secret_in_production')
 JWT_ALGORITHM = 'HS256'
@@ -90,7 +94,7 @@ def safe_bool(value):
 
 
 def user_to_public(row):
-    return {
+    data = {
         'id': row['id'],
         'name': row['name'],
         'email': row['email'],
@@ -99,6 +103,13 @@ def user_to_public(row):
         'createdAt': row['created_at'],
         'updatedAt': row['updated_at'],
     }
+    # Include extended profile fields when available
+    for field in ('last_name', 'nickname', 'phone', 'avatar_url', 'address'):
+        try:
+            data[field] = row[field] or ''
+        except (IndexError, KeyError):
+            pass
+    return data
 
 
 def product_to_public(row):
@@ -139,7 +150,8 @@ def get_user_by_email(email):
     db = get_db()
     return db.execute(
         '''
-        SELECT u.id, u.name, u.email, u.password_hash, u.is_premium, u.created_at, u.updated_at,
+        SELECT u.id, u.name, u.last_name, u.nickname, u.phone, u.avatar_url, u.address,
+               u.email, u.password_hash, u.is_premium, u.created_at, u.updated_at,
                r.name AS role_name
         FROM users u
         JOIN roles r ON r.id = u.role_id
@@ -153,7 +165,8 @@ def get_user_by_id(user_id):
     db = get_db()
     return db.execute(
         '''
-        SELECT u.id, u.name, u.email, u.password_hash, u.is_premium, u.created_at, u.updated_at,
+        SELECT u.id, u.name, u.last_name, u.nickname, u.phone, u.avatar_url, u.address,
+               u.email, u.password_hash, u.is_premium, u.created_at, u.updated_at,
                r.name AS role_name
         FROM users u
         JOIN roles r ON r.id = u.role_id
@@ -251,6 +264,7 @@ def set_auth_cookie(response, token):
 
 def init_db():
     DATA_DIR.mkdir(parents=True, exist_ok=True)
+    UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
     conn = open_db_connection()
 
     conn.executescript(
@@ -284,8 +298,38 @@ def init_db():
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL
         );
+
+        CREATE TABLE IF NOT EXISTS favorites (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            product_id INTEGER NOT NULL,
+            created_at TEXT NOT NULL,
+            UNIQUE(user_id, product_id)
+        );
+
+        CREATE TABLE IF NOT EXISTS orders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            items TEXT NOT NULL,
+            total REAL NOT NULL,
+            status TEXT NOT NULL DEFAULT 'completado',
+            created_at TEXT NOT NULL
+        );
         '''
     )
+
+    # Add profile columns if missing (safe ALTER TABLE)
+    for col, col_def in [
+        ('last_name', "TEXT NOT NULL DEFAULT ''"),
+        ('nickname', "TEXT NOT NULL DEFAULT ''"),
+        ('phone', "TEXT NOT NULL DEFAULT ''"),
+        ('avatar_url', "TEXT NOT NULL DEFAULT ''"),
+        ('address', "TEXT NOT NULL DEFAULT ''"),
+    ]:
+        try:
+            conn.execute(f'ALTER TABLE users ADD COLUMN {col} {col_def}')
+        except Exception:
+            pass  # Column already exists
 
     conn.execute('INSERT OR IGNORE INTO roles(name) VALUES (?)', ('admin',))
     conn.execute('INSERT OR IGNORE INTO roles(name) VALUES (?)', ('user',))
@@ -305,7 +349,7 @@ def init_db():
             INSERT INTO users(name, email, password_hash, role_id, is_premium, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?)
             ''',
-            ('Administrador ElRinconAzul', admin_email, password_hash, admin_role_id, 1, now, now),
+            ('Administrador Ganesh', admin_email, password_hash, admin_role_id, 1, now, now),
         )
 
     exists_user = conn.execute('SELECT id FROM users WHERE email = ?', (user_email,)).fetchone()
@@ -358,8 +402,6 @@ def apply_cors(response):
     origin = request.headers.get('Origin')
     if origin in ALLOWED_ORIGINS:
         response.headers['Access-Control-Allow-Origin'] = origin
-    else:
-        response.headers['Access-Control-Allow-Origin'] = 'http://localhost:8000'
 
     response.headers['Vary'] = 'Origin'
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, PATCH, DELETE, OPTIONS'
@@ -703,6 +745,240 @@ def users_update_premium(user_id):
 
     updated = get_user_by_id(user_id)
     return jsonify({'success': True, 'message': 'Estado premium actualizado', 'data': user_to_public(updated)})
+
+
+# -------------------------
+# Profile API routes
+# -------------------------
+@app.get('/api/v1/me/profile')
+@auth_required
+def me_profile():
+    return jsonify({'success': True, 'user': user_to_public(g.current_user)})
+
+
+@app.put('/api/v1/me/profile')
+@auth_required
+def me_profile_update():
+    data = request.get_json(silent=True) or {}
+    user = g.current_user
+    db = get_db()
+
+    name = str(data.get('name', user['name'])).strip()
+    last_name = str(data.get('last_name', user['last_name'])).strip()
+    nickname = str(data.get('nickname', user['nickname'])).strip()
+    phone = str(data.get('phone', user['phone'])).strip()
+    address = str(data.get('address', user['address'])).strip()
+
+    if len(name) < 2:
+        return jsonify({'success': False, 'message': 'Nombre invalido'}), 400
+
+    db.execute(
+        '''
+        UPDATE users SET name = ?, last_name = ?, nickname = ?, phone = ?, address = ?, updated_at = ?
+        WHERE id = ?
+        ''',
+        (name, last_name, nickname, phone, address, now_iso(), user['id']),
+    )
+    db.commit()
+
+    updated = get_user_by_id(user['id'])
+    return jsonify({'success': True, 'message': 'Perfil actualizado', 'user': user_to_public(updated)})
+
+
+@app.put('/api/v1/me/password')
+@auth_required
+def me_password_update():
+    data = request.get_json(silent=True) or {}
+    user = g.current_user
+
+    current_password = str(data.get('currentPassword', ''))
+    new_password = str(data.get('newPassword', ''))
+
+    if not current_password or not new_password:
+        return jsonify({'success': False, 'message': 'Contrasena actual y nueva requeridas'}), 400
+
+    if not bcrypt.checkpw(current_password.encode('utf-8'), user['password_hash'].encode('utf-8')):
+        return jsonify({'success': False, 'message': 'Contrasena actual incorrecta'}), 400
+
+    if not validate_password(new_password):
+        return jsonify({'success': False, 'message': 'Nueva contrasena debe tener minimo 8 caracteres, una mayuscula y un numero'}), 400
+
+    db = get_db()
+    password_hash = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    db.execute('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?', (password_hash, now_iso(), user['id']))
+    db.commit()
+
+    return jsonify({'success': True, 'message': 'Contrasena actualizada'})
+
+
+@app.post('/api/v1/me/avatar')
+@auth_required
+def me_avatar_upload():
+    if 'avatar' not in request.files:
+        return jsonify({'success': False, 'message': 'No se envio archivo'}), 400
+
+    file = request.files['avatar']
+    if not file.filename:
+        return jsonify({'success': False, 'message': 'Archivo vacio'}), 400
+
+    ext = Path(file.filename).suffix.lower()
+    if ext not in ALLOWED_AVATAR_EXTENSIONS:
+        return jsonify({'success': False, 'message': 'Formato no permitido. Usa JPG, PNG, GIF o WebP'}), 400
+
+    filename = f'{g.current_user["id"]}_{uuid.uuid4().hex[:8]}{ext}'
+    filepath = UPLOADS_DIR / filename
+    file.save(str(filepath))
+
+    avatar_url = f'/uploads/avatars/{filename}'
+    db = get_db()
+    db.execute('UPDATE users SET avatar_url = ?, updated_at = ? WHERE id = ?', (avatar_url, now_iso(), g.current_user['id']))
+    db.commit()
+
+    return jsonify({'success': True, 'message': 'Avatar actualizado', 'avatar_url': avatar_url})
+
+
+@app.get('/api/v1/me/favorites')
+@auth_required
+def me_favorites_list():
+    db = get_db()
+    rows = db.execute(
+        '''
+        SELECT p.id, p.sku, p.name, p.description, p.category, p.price, p.stock, p.is_premium, p.image, p.created_at, p.updated_at
+        FROM favorites f
+        JOIN products p ON p.id = f.product_id
+        WHERE f.user_id = ?
+        ORDER BY f.created_at DESC
+        ''',
+        (g.current_user['id'],),
+    ).fetchall()
+
+    products = [product_to_public(row) for row in rows]
+    return jsonify({'success': True, 'data': products})
+
+
+@app.post('/api/v1/me/favorites')
+@auth_required
+def me_favorites_add():
+    data = request.get_json(silent=True) or {}
+    product_id = data.get('productId')
+
+    if not product_id:
+        return jsonify({'success': False, 'message': 'productId requerido'}), 400
+
+    product = get_product_by_id(int(product_id))
+    if not product:
+        return jsonify({'success': False, 'message': 'Producto no encontrado'}), 404
+
+    db = get_db()
+    try:
+        db.execute(
+            'INSERT INTO favorites(user_id, product_id, created_at) VALUES (?, ?, ?)',
+            (g.current_user['id'], int(product_id), now_iso()),
+        )
+        db.commit()
+    except Exception:
+        pass  # Already favorited
+
+    return jsonify({'success': True, 'message': 'Agregado a favoritos'})
+
+
+@app.delete('/api/v1/me/favorites/<int:product_id>')
+@auth_required
+def me_favorites_remove(product_id):
+    db = get_db()
+    db.execute('DELETE FROM favorites WHERE user_id = ? AND product_id = ?', (g.current_user['id'], product_id))
+    db.commit()
+    return jsonify({'success': True, 'message': 'Eliminado de favoritos'})
+
+
+@app.get('/api/v1/me/orders')
+@auth_required
+def me_orders_list():
+    db = get_db()
+    rows = db.execute(
+        'SELECT id, items, total, status, created_at FROM orders WHERE user_id = ? ORDER BY created_at DESC',
+        (g.current_user['id'],),
+    ).fetchall()
+
+    orders = []
+    for row in rows:
+        try:
+            items = json.loads(row['items'])
+        except Exception:
+            items = []
+        orders.append({
+            'id': row['id'],
+            'items': items,
+            'total': float(row['total']),
+            'status': row['status'],
+            'createdAt': row['created_at'],
+        })
+
+    return jsonify({'success': True, 'data': orders})
+
+
+@app.post('/api/v1/me/orders')
+@auth_required
+def me_orders_create():
+    data = request.get_json(silent=True) or {}
+    items = data.get('items', [])
+    total = float(data.get('total', 0))
+
+    if not items or total <= 0:
+        return jsonify({'success': False, 'message': 'Pedido invalido'}), 400
+
+    db = get_db()
+    cursor = db.execute(
+        'INSERT INTO orders(user_id, items, total, status, created_at) VALUES (?, ?, ?, ?, ?)',
+        (g.current_user['id'], json.dumps(items), total, 'completado', now_iso()),
+    )
+    db.commit()
+
+    return jsonify({'success': True, 'message': 'Pedido registrado', 'orderId': cursor.lastrowid}), 201
+
+
+@app.get('/api/v1/me/recommendations')
+@auth_required
+def me_recommendations():
+    db = get_db()
+
+    # Get categories from user favorites
+    fav_categories = db.execute(
+        '''
+        SELECT DISTINCT p.category
+        FROM favorites f
+        JOIN products p ON p.id = f.product_id
+        WHERE f.user_id = ?
+        ''',
+        (g.current_user['id'],),
+    ).fetchall()
+
+    fav_cat_set = {row['category'] for row in fav_categories}
+
+    # Get favorited product IDs to exclude
+    fav_ids = db.execute(
+        'SELECT product_id FROM favorites WHERE user_id = ?',
+        (g.current_user['id'],),
+    ).fetchall()
+    fav_id_set = {row['product_id'] for row in fav_ids}
+
+    all_products = db.execute(
+        'SELECT id, sku, name, description, category, price, stock, is_premium, image, created_at, updated_at FROM products'
+    ).fetchall()
+
+    # Prioritize same categories, then others
+    recommended = []
+    others = []
+    for row in all_products:
+        if row['id'] in fav_id_set:
+            continue
+        if row['category'] in fav_cat_set:
+            recommended.append(product_to_public(row))
+        else:
+            others.append(product_to_public(row))
+
+    recommended.extend(others)
+    return jsonify({'success': True, 'data': recommended[:8]})
 
 
 # -------------------------

@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# 🔐 ElRinconAzul Security & Quality Verification Script
+# 🔐 Ganesh Security & Quality Verification Script
 # Ejecutar antes de deployar a producción
 
 echo "
 ████████████████████████████████████████████████████████
 █                                                      █
-█  🔐 ElRinconAzul SECURITY VERIFICATION 2026          █
+█  🔐 Ganesh SECURITY VERIFICATION 2026          █
 █                                                      █
 ████████████████████████████████████████████████████████
 "

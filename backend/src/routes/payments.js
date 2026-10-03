@@ -351,7 +351,7 @@ const paymentRoutes = (app) => {
      *   "amount": 10000,  // centavos ($100.00)
      *   "currency": "USD",
      *   "orderId": "ORD_123456",
-     *   "description": "Compra en ElRinconAzul"
+     *   "description": "Compra en Ganesh"
      * }
      */
     app.post('/api/v1/payment/simulate', async (req, res) => {

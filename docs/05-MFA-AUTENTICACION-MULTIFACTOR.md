@@ -152,8 +152,8 @@ app.post('/api/v1/auth/setup-totp', authenticateJWT, async (req, res) => {
     
     // Generar secret
     const secret = speakeasy.generateSecret({
-        name: `ElRinconAzul (${user.email})`,
-        issuer: 'ElRinconAzul',
+        name: `Ganesh (${user.email})`,
+        issuer: 'Ganesh',
         length: 32
     });
     
@@ -498,7 +498,7 @@ DOCUMENTACIÓN:
 
 ## Conclusión
 
-**MFA es REQUERIDO** en ElRinconAzul v2.0 para:
+**MFA es REQUERIDO** en Ganesh v2.0 para:
 
 - ✅ Cuentas de administrador (OBLIGATORIO)
 - ✅ Cuentas de usuario (OPCIONAL pero RECOMENDADO)

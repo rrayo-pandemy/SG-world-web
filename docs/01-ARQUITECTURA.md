@@ -1,4 +1,4 @@
-# 🏗️ ElRinconAzul - Arquitectura del Sistema 2026
+# 🏗️ Ganesh - Arquitectura del Sistema 2026
 
 ## Diagrama de Capas
 

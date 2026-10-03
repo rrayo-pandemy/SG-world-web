@@ -7,17 +7,17 @@
 
 ## 1. Introducción
 
-Las métricas de calidad permiten **medir, monitorear y mejorar** el rendimiento, confiabilidad y seguridad de ElRinconAzul.
+Las métricas de calidad permiten **medir, monitorear y mejorar** el rendimiento, confiabilidad y seguridad de Ganesh.
 
 ```
 SIN MÉTRICAS:           CON MÉTRICAS:
 ┌──────────────┐        ┌──────────────────┐
-│   ❓ ¿Qué    │        │   ✓ Uptime       │ 99.95%
+│    ¿Qué      │        │   ✓ Uptime       │ 99.95%
 │   pasó?      │        │   ✓ Latencia     │ <200ms
-│              │        │   ✓ Errores       │ <0.1%
-│   ❓ ¿Por    │        │   ✓ Conversión    │ 3.2%
-│   qué?       │        │   ✓ Seguridad     │ 0 breaches
-│              │        │   ✓ Usuarios      │ 50K DAU
+│              │        │   ✓ Errores      │ <0.1%
+│   ¿Por       │        │   ✓ Conversión   │ 3.2%
+│   qué?       │        │   ✓ Seguridad    │ 0 breaches
+│              │        │   ✓ Usuarios     │ 50K DAU
 └──────────────┘        └──────────────────┘
 
 La diferencia: datos vs intuición
@@ -42,7 +42,7 @@ Tier            Uptime    Downtime/mes
 Básico          99.0%     ~7 horas
 Profesional     99.5%     ~3.5 horas
 Enterprise      99.95%    ~22 minutos
-ElRinconAzul      99.95%    <22 min/mes
+Ganesh      99.95%    <22 min/mes
 ```
 
 **Implementar:**
@@ -701,7 +701,7 @@ DOCUMENTACIÓN:
 Sin datos, trabajas con suposiciones.  
 Con datos, trabajas con evidencia.
 
-ElRinconAzul implementará:
+Ganesh implementará:
 - ✅ Monitoreo de confiabilidad (99.95% uptime)
 - ✅ Métricas de rendimiento (P95 < 200ms)
 - ✅ KPIs de negocio (conversión, AOV, LTV)

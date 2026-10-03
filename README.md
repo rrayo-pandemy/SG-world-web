@@ -1,10 +1,17 @@
-# 🌟 ElRinconAzul - Tienda Online Premium 2026-2027
+# 🌟 Ganesh - Tienda Online Premium 2026-2027
 
 > **Plataforma de ecommerce moderna, segura y escalable. Producción-lista con cumplimiento ISO 9001 y WCAG 2.1 AA.**
 
 ## ✨ Características Principales
 
 ### 🎨 Frontend (UX/UI Premium)
+- primero guarda el proyecto en github y git tambien versionalo, luego creas un documento con las versiones realizadas, finalmente ejecutas el cambio.
+- se requiere una version 1.0 de la tienda en la rama v1.0.
+- en caso de crear una version nueva se debe guardar en la rama v2.0 y asi sucesivamente.
+- la contraseña se pueda cambiar cada 15 dias y use una contraseña robusta(minimo 9 digitos, minimo 1 mayuscula, minimo 1 numero y minimo 1 caracter).
+- en profile los productos puedan ser añadidos al carrito, colocando una cantidad.
+- 
+
 
 - ✅ **Diseño Minimalista Evolutivo** - Glassmorphism, bordes redondeados, paleta natural
 - ✅ **Scroll-Reveal Animations** - Elementos aparecen progresivamente con IntersectionObserver

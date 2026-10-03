@@ -1,6 +1,6 @@
 ﻿const express = require('express');
 const { body, validationResult } = require('express-validator');
-const { getProducts, saveProducts } = require('../services/store');
+const { getProducts, saveProducts, getProductsAsync, saveProductsAsync } = require('../services/store');
 const { authRequired, adminRequired } = require('../middleware/auth');
 
 const router = express.Router();
@@ -12,9 +12,9 @@ function normalizeBadge(value) {
   return null;
 }
 
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   const { category, q } = req.query;
-  let products = getProducts();
+  let products = await getProductsAsync();
 
   if (category) {
     products = products.filter((p) => p.category === category);
@@ -28,9 +28,9 @@ router.get('/', (req, res) => {
   return res.json({ success: true, count: products.length, data: products });
 });
 
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   const id = Number(req.params.id);
-  const product = getProducts().find((p) => p.id === id);
+  const product = (await getProductsAsync()).find((p) => p.id === id);
 
   if (!product) {
     return res.status(404).json({ success: false, message: 'Producto no encontrado' });
@@ -50,13 +50,13 @@ router.post(
     body('price').isFloat({ gt: 0 }),
     body('stock').isInt({ min: 0 }),
   ],
-  (req, res) => {
+  async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ success: false, errors: errors.array() });
     }
 
-    const products = getProducts();
+    const products = await getProductsAsync();
     const nextId = products.length ? Math.max(...products.map((p) => p.id)) + 1 : 1;
 
     const newProduct = {
@@ -74,15 +74,15 @@ router.post(
     };
 
     products.push(newProduct);
-    saveProducts(products);
+    await saveProductsAsync(products);
 
     return res.status(201).json({ success: true, data: newProduct });
   }
 );
 
-router.put('/:id', authRequired, adminRequired, (req, res) => {
+router.put('/:id', authRequired, adminRequired, async (req, res) => {
   const id = Number(req.params.id);
-  const products = getProducts();
+  const products = await getProductsAsync();
   const index = products.findIndex((p) => p.id === id);
 
   if (index === -1) {
@@ -104,20 +104,20 @@ router.put('/:id', authRequired, adminRequired, (req, res) => {
     updatedAt: new Date().toISOString(),
   };
 
-  saveProducts(products);
+  await saveProductsAsync(products);
   return res.json({ success: true, data: products[index] });
 });
 
-router.delete('/:id', authRequired, adminRequired, (req, res) => {
+router.delete('/:id', authRequired, adminRequired, async (req, res) => {
   const id = Number(req.params.id);
-  const products = getProducts();
+  const products = await getProductsAsync();
   const next = products.filter((p) => p.id !== id);
 
   if (next.length === products.length) {
     return res.status(404).json({ success: false, message: 'Producto no encontrado' });
   }
 
-  saveProducts(next);
+  await saveProductsAsync(next);
   return res.json({ success: true, message: 'Producto eliminado' });
 });
 

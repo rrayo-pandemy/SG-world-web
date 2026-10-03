@@ -25,7 +25,9 @@ __pycache__/
 # Environment files
 .env
 .env.*
+.env.production
 !.env.example
+!.env.production.example
 
 # OS/editor files
 .DS_Store
@@ -37,3 +39,7 @@ dist/
 build/
 .cache/
 coverage/
+
+# Sensitive project data (avoid committing PII or uploads)
+backend/src/data/
+frontend/uploads/

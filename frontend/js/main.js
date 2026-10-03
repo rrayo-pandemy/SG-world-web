@@ -1,95 +1,45 @@
 /* ============================================
-   ElRinconAzul FRONTEND APP
+   Ganesh FRONTEND APP
    ============================================ */
 
-const APP_PRODUCTS = [
-  {
-    id: 1,
-    name: 'Auroral Essence',
-    description: 'Serum luminoso para rutina diaria premium.',
-    price: 49.99,
-    badge: 'Nuevo',
-    category: 'skincare',
-    isPremium: false,
-    image: 'https://img.freepik.com/premium-photo/digital-aurora-essence_1029473-34104.jpg?w=996',
-  },
-  {
-    id: 2,
-    name: 'Glacial Shield',
-    description: 'Crema protectora con hidratacion profunda.',
-    price: 64.99,
-    badge: null,
-    category: 'skincare',
-    isPremium: false,
-    image: 'https://via.placeholder.com/400x320/0b3c5d/f7f1e3?text=Glacial+Shield',
-  },
-  {
-    id: 3,
-    name: 'Teal Smart Bottle',
-    description: 'Botella termica con recordatorios inteligentes.',
-    price: 64.5,
-    badge: 'Promo',
-    category: 'lifestyle',
-    isPremium: true,
-    image: 'https://via.placeholder.com/400x320/1f9e9b/f8efe1?text=Smart+Bottle',
-  },
-  {
-    id: 4,
-    name: 'Apricot Balance Set',
-    description: 'Set de bienestar para una rutina completa.',
-    price: 92.0,
-    badge: 'Top',
-    category: 'wellness',
-    isPremium: true,
-    image: 'https://via.placeholder.com/400x320/f59f72/faf7ef?text=Balance+Set',
-  },
-  {
-    id: 5,
-    name: 'Linen Calm Diffuser',
-    description: 'Difusor hogar con aroma limpio y calmante.',
-    price: 79.0,
-    badge: null,
-    category: 'home',
-    isPremium: false,
-    image: 'https://via.placeholder.com/400x320/a8b9a5/f8f4ec?text=Calm+Diffuser',
-  },
-  {
-    id: 6,
-    name: 'Midnight Repair Mask',
-    description: 'Mascarilla nocturna de regeneracion avanzada.',
-    price: 59.99,
-    badge: null,
-    category: 'skincare',
-    isPremium: true,
-    image: 'https://via.placeholder.com/400x320/2f3e56/f8f1ea?text=Repair+Mask',
-  },
-  {
-    id: 7,
-    name: 'Data Flow Lamp',
-    description: 'Lampara minimalista con luz ambiental inteligente.',
-    price: 84.0,
-    badge: 'Edicion',
-    category: 'home',
-    isPremium: false,
-    image: 'https://via.placeholder.com/400x320/254c66/ece7dd?text=Data+Lamp',
-  },
-  {
-    id: 8,
-    name: 'Core Wellness Journal',
-    description: 'Diario guiado para seguimiento personal diario.',
-    price: 34.5,
-    badge: null,
-    category: 'wellness',
-    isPremium: false,
-    image: 'https://via.placeholder.com/400x320/c6a988/faf2e8?text=Wellness+Journal',
-  },
-];
+// Productos se cargan desde la API. Este array se usa solo como fallback vacío.
+const APP_PRODUCTS = [];
+
+const PRODUCTS_CACHE_KEY = 'ElRinconAzul_products_cache';
 
 const PRODUCTS_SYNC_KEY = 'ElRinconAzul_products_updated_at';
+
+const CATEGORY_LABELS = {
+  skincare: 'Skincare',
+  wellness: 'Wellness',
+  home: 'Home',
+  lifestyle: 'Lifestyle',
+  streaming: 'Streaming',
+  pescados: 'Pescados',
+};
 
 function safeCurrency(value) {
   if (typeof formatCurrency === 'function') return formatCurrency(value);
   return `S/ ${Number(value).toFixed(2)}`;
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function validateImageUrl(url) {
+  if (!url) return '';
+  const s = String(url).trim();
+  if (/^https?:\/\//i.test(s)) return s;
+  if (/^\/uploads\//.test(s)) return s; // allow local uploads path
+  if (/^data:image\//i.test(s)) return s;
+  // fallback to placeholder
+  return 'https://via.placeholder.com/500x400?text=Product';
 }
 
 function safeLog(message, type = 'info') {
@@ -115,40 +65,58 @@ function normalizeBadgeLabel(badge) {
   return String(badge).trim();
 }
 
+function normalizeCategoryId(category) {
+  return String(category || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function formatCategoryName(category) {
+  const normalized = normalizeCategoryId(category);
+  if (CATEGORY_LABELS[normalized]) return CATEGORY_LABELS[normalized];
+
+  return String(category || '')
+    .trim()
+    .replace(/[-_]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
 class ProductManager {
   constructor() {
-    this.products = APP_PRODUCTS.map((product) => ({ ...product }));
+    // Intentar cargar desde caché para evitar parpadeo
+    const cached = localStorage.getItem(PRODUCTS_CACHE_KEY);
+    if (cached) {
+      try {
+        this.products = JSON.parse(cached);
+      } catch (e) {
+        this.products = APP_PRODUCTS.map((p) => ({ ...p }));
+      }
+    } else {
+      this.products = APP_PRODUCTS.map((p) => ({ ...p }));
+    }
+
     this.activeFilter = 'all';
     this.apiBase = '';
     this.isLoadingProducts = false;
+    this.categories = [];
+    this.apiCategories = [];
     this.init().catch(() => {
-      safeLog('No se pudo inicializar la carga del catalogo desde API.', 'warning');
+      safeLog('No se pudo inicializar la carga del catalogo o categorias desde API.', 'warning');
     });
   }
 
   getVisibleProducts() {
     if (this.activeFilter === 'all') return this.products;
-    return this.products.filter((product) => product.category === this.activeFilter);
+    return this.products.filter((product) => normalizeCategoryId(product.category) === this.activeFilter);
   }
 
   getApiBaseCandidates() {
-    const candidates = [];
-    const addCandidate = (value) => {
-      if (typeof value !== 'string') return;
-      const normalized = value.trim().replace(/\/$/, '');
-      if (!normalized && normalized !== '') return;
-      if (!candidates.includes(normalized)) candidates.push(normalized);
-    };
-
-    if (typeof window.API_BASE === 'string' && window.API_BASE.trim()) {
-      addCandidate(window.API_BASE);
-    }
-
-    if (window.location.port === '8000') {
-      addCandidate(window.location.protocol + '//' + window.location.hostname + ':5000');
-    }
-    addCandidate('');
-    return candidates;
+    return window.ApiConfig ? window.ApiConfig.getBaseCandidates() : [''];
   }
 
   buildApiUrl(path) {
@@ -190,6 +158,68 @@ class ProductManager {
     return null;
   }
 
+  async loadCategoriesFromApi() {
+    const bases = this.getApiBaseCandidates();
+    for (const base of bases) {
+      try {
+        const response = await fetch(`${base}/api/v1/categories`, { credentials: 'include' });
+        if (!response.ok) throw new Error('Error loading categories');
+        const data = await response.json();
+        return Array.isArray(data?.data) ? data.data : [];
+      } catch (_error) {
+        // next
+      }
+    }
+    return [];
+  }
+
+  getCategoriesFromProducts() {
+    const categoriesById = new Map();
+
+    this.products.forEach((product) => {
+      const id = normalizeCategoryId(product.category);
+      if (!id || categoriesById.has(id)) return;
+      categoriesById.set(id, {
+        id,
+        name: formatCategoryName(product.category),
+      });
+    });
+
+    return Array.from(categoriesById.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  normalizeCategories(categories) {
+    return categories
+      .map((category) => {
+        const rawId = category?.id || category?.name;
+        const id = normalizeCategoryId(rawId);
+        if (!id) return null;
+        return {
+          id,
+          name: formatCategoryName(category?.name || rawId),
+        };
+      })
+      .filter(Boolean);
+  }
+
+  updateCategories(apiCategories = []) {
+    const categoriesById = new Map();
+
+    this.normalizeCategories(apiCategories).forEach((category) => {
+      categoriesById.set(category.id, category);
+    });
+
+    this.getCategoriesFromProducts().forEach((category) => {
+      if (!categoriesById.has(category.id)) categoriesById.set(category.id, category);
+    });
+
+    this.categories = Array.from(categoriesById.values()).sort((a, b) => a.name.localeCompare(b.name));
+
+    if (this.activeFilter !== 'all' && !this.categories.some((category) => category.id === this.activeFilter)) {
+      this.activeFilter = 'all';
+    }
+  }
+
   async refreshProductsFromApi({ silent = false } = {}) {
     if (this.isLoadingProducts) return;
 
@@ -202,6 +232,12 @@ class ProductManager {
       }
 
       this.products = apiProducts;
+      
+      // Guardar en caché para la próxima carga
+      localStorage.setItem(PRODUCTS_CACHE_KEY, JSON.stringify(this.products));
+
+      this.updateCategories(this.apiCategories);
+      this.initFilters();
       this.renderProducts();
       if (!silent) safeLog(`Catalogo sincronizado desde API (${apiProducts.length} productos).`, 'success');
     } finally {
@@ -222,39 +258,89 @@ class ProductManager {
 
     const visibleProducts = this.getVisibleProducts();
 
-    container.innerHTML = visibleProducts
-      .map(
-        (product, index) => `
-        <article class="product-card scroll-reveal ${product.isPremium ? 'product-card--premium' : ''}" data-product-id="${product.id}" style="--reveal-delay:${index * 0.06}s">
-          <div class="product-image">
-            ${product.badge ? `<span class="product-badge-premium ${getProductBadgeClass(product.badge)}">${product.badge}</span>` : ''}
-            ${product.isPremium ? '<span class="product-badge-premium">Premium</span>' : ''}
-            <img src="${product.image}" alt="${product.name}" loading="lazy">
-          </div>
-          <div class="product-content">
-            <h3 class="product-name">${product.name}</h3>
-            <p class="product-description">${product.description}</p>
-            <div class="product-price">
-              <span class="product-price-current">${safeCurrency(product.price)}</span>
-            </div>
-            <div class="product-actions">
-              <button class="btn-add-cart" onclick="cartManager.addToCart(${product.id})" data-product-id="${product.id}">
-                ${product.isPremium ? 'Solo Premium' : 'Anadir al carrito'}
-              </button>
-              <a class="btn-product-detail" href="product-detail.html?id=${product.id}" aria-label="Ver detalle de ${product.name}">Detalle</a>
-<button 
-  class="btn-wishlist" 
-  data-wishlist="${product.id}" 
-  title="Añadir a favoritos" 
-  aria-label="Añadir ${product.name} a favoritos">
-  <span class="heart">♡</span>
-</button>
-            </div>
-          </div>
-        </article>
-      `
-      )
-      .join('');
+    // Build DOM nodes safely to avoid XSS from product data
+    container.innerHTML = '';
+    const frag = document.createDocumentFragment();
+    visibleProducts.forEach((product, index) => {
+      const art = document.createElement('article');
+      art.className = `product-card scroll-reveal ${product.isPremium ? 'product-card--premium' : ''}`;
+      art.dataset.productId = String(product.id);
+      art.style.setProperty('--reveal-delay', `${index * 0.06}s`);
+
+      const imgWrap = document.createElement('div');
+      imgWrap.className = 'product-image';
+      if (product.badge) {
+        const span = document.createElement('span');
+        span.className = `product-badge-premium ${getProductBadgeClass(product.badge)}`;
+        span.textContent = product.badge;
+        imgWrap.appendChild(span);
+      }
+      if (product.isPremium) {
+        const spanP = document.createElement('span');
+        spanP.className = 'product-badge-premium';
+        spanP.textContent = 'Premium';
+        imgWrap.appendChild(spanP);
+      }
+      const img = document.createElement('img');
+      img.loading = 'lazy';
+      img.alt = String(product.name || '');
+      img.src = validateImageUrl(product.image);
+      imgWrap.appendChild(img);
+
+      const content = document.createElement('div');
+      content.className = 'product-content';
+      const h3 = document.createElement('h3');
+      h3.className = 'product-name';
+      h3.textContent = product.name || '';
+      const p = document.createElement('p');
+      p.className = 'product-description';
+      p.textContent = product.description || '';
+      const priceWrap = document.createElement('div');
+      priceWrap.className = 'product-price';
+      const priceSpan = document.createElement('span');
+      priceSpan.className = 'product-price-current';
+      priceSpan.textContent = safeCurrency(product.price);
+      priceWrap.appendChild(priceSpan);
+
+      const actions = document.createElement('div');
+      actions.className = 'product-actions';
+      const btnAdd = document.createElement('button');
+      btnAdd.className = 'btn-add-cart';
+      btnAdd.dataset.productId = String(product.id);
+      btnAdd.textContent = product.isPremium ? 'Solo Premium' : 'Anadir al carrito';
+      btnAdd.addEventListener('click', () => { if (window.cartManager) window.cartManager.addToCart(product.id); });
+
+      const aDetail = document.createElement('a');
+      aDetail.className = 'btn-product-detail';
+      aDetail.href = `product-detail.html?id=${encodeURIComponent(String(product.id))}`;
+      aDetail.setAttribute('aria-label', `Ver detalle de ${product.name}`);
+      aDetail.textContent = 'Detalle';
+
+      const btnWish = document.createElement('button');
+      btnWish.className = 'btn-wishlist';
+      btnWish.dataset.wishlist = String(product.id);
+      btnWish.title = 'Añadir a favoritos';
+      btnWish.setAttribute('aria-label', `Añadir ${product.name} a favoritos`);
+      const heart = document.createElement('span');
+      heart.className = 'heart';
+      heart.textContent = '♡';
+      btnWish.appendChild(heart);
+
+      actions.appendChild(btnAdd);
+      actions.appendChild(aDetail);
+      actions.appendChild(btnWish);
+
+      content.appendChild(h3);
+      content.appendChild(p);
+      content.appendChild(priceWrap);
+      content.appendChild(actions);
+
+      art.appendChild(imgWrap);
+      art.appendChild(content);
+      frag.appendChild(art);
+    });
+
+    container.appendChild(frag);
 
     if (window.scrollAnimations && typeof window.scrollAnimations.observeElements === 'function') {
       window.scrollAnimations.observeElements();
@@ -275,29 +361,74 @@ class ProductManager {
   }
 
   initFilters() {
-    document.querySelectorAll('.filter-btn').forEach((btn) => {
-      btn.addEventListener('click', (event) => {
+    const filterToolbar = document.querySelector('.filter-toolbar');
+    const dropdownMenu = document.querySelector('.nav__dropdown');
+
+    if (filterToolbar) {
+      filterToolbar.innerHTML = '';
+      const allButton = document.createElement('button');
+      allButton.className = 'filter-btn';
+      allButton.dataset.filter = 'all';
+      allButton.setAttribute('aria-pressed', this.activeFilter === 'all' ? 'true' : 'false');
+      allButton.textContent = 'Todos';
+      allButton.classList.toggle('active', this.activeFilter === 'all');
+      allButton.addEventListener('click', (event) => {
         event.preventDefault();
-        const filter = btn.dataset.filter || 'all';
-        this.setFilter(filter);
+        this.setFilter('all');
       });
-    });
+      filterToolbar.appendChild(allButton);
 
-    document.querySelectorAll('.nav__dropdown-link').forEach((link) => {
-      link.addEventListener('click', (event) => {
+      this.categories.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = 'filter-btn';
+        btn.dataset.filter = cat.id;
+        btn.setAttribute('aria-pressed', this.activeFilter === cat.id ? 'true' : 'false');
+        btn.textContent = cat.name;
+        btn.classList.toggle('active', this.activeFilter === cat.id);
+        btn.addEventListener('click', (event) => {
+          event.preventDefault();
+          this.setFilter(cat.id);
+        });
+        filterToolbar.appendChild(btn);
+      });
+    }
+
+    if (dropdownMenu) {
+      dropdownMenu.innerHTML = '<li><a href="#productos" class="nav__dropdown-link" data-filter="all">Todos los Productos</a></li>';
+      this.categories.forEach(cat => {
+        const li = document.createElement('li');
+        const link = document.createElement('a');
+        link.href = '#productos';
+        link.className = 'nav__dropdown-link';
+        link.dataset.filter = cat.id;
+        link.textContent = cat.name;
+        link.addEventListener('click', (event) => {
+          event.preventDefault();
+          this.setFilter(cat.id);
+          const productsSection = document.getElementById('productos');
+          if (productsSection) {
+            productsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+        li.appendChild(link);
+        dropdownMenu.appendChild(li);
+      });
+
+      // Bind 'Todos' in dropdown
+      dropdownMenu.querySelector('[data-filter="all"]').addEventListener('click', (event) => {
         event.preventDefault();
-        const filter = link.dataset.filter || 'all';
-        this.setFilter(filter);
-
+        this.setFilter('all');
         const productsSection = document.getElementById('productos');
         if (productsSection) {
           productsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       });
-    });
+    }
   }
 
   async init() {
+    this.apiCategories = await this.loadCategoriesFromApi();
+    this.updateCategories(this.apiCategories);
     this.initFilters();
     this.bindProductSync();
     this.renderProducts();
@@ -396,6 +527,21 @@ class CTAHandler {
 
   handleCheckout() {
     if (!window.cartManager) return;
+
+    // Verificar si el usuario está autenticado
+    const isAuthenticated = window.sessionManager && typeof window.sessionManager.isAuthenticated === 'function'
+      ? window.sessionManager.isAuthenticated()
+      : false;
+
+    if (!isAuthenticated) {
+      if (window.cartManager && typeof window.cartManager.showNotification === 'function') {
+        window.cartManager.showNotification('Por favor, inicia sesión para proceder al pago.');
+      }
+      if (window.premiumLogin && typeof window.premiumLogin.open === 'function') {
+        window.premiumLogin.open();
+      }
+      return;
+    }
 
     const cart = cartManager.getCart();
     if (!cart.length) {
@@ -537,6 +683,7 @@ class PremiumLogin {
       const response = await fetch(`${API_BASE}/api/v1/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ email, password }),
       });
 
@@ -550,11 +697,9 @@ class PremiumLogin {
       if (window.sessionManager && typeof window.sessionManager.handleAuthSuccess === 'function') {
         await window.sessionManager.handleAuthSuccess(data.user, data.token);
       } else {
+        // Fallback: persist minimal flags
         localStorage.setItem('premiumLogged', isPremium ? 'true' : 'false');
         localStorage.setItem('normalLogged', isPremium ? 'false' : 'true');
-        if (data.token) {
-          localStorage.setItem('authToken', data.token);
-        }
         if (data.user?.email) {
           localStorage.setItem('userEmail', data.user.email);
         }
@@ -581,9 +726,13 @@ class SignupModal {
 
     this.overlay = this.modal.querySelector('.modal__overlay');
     this.closeBtn = this.modal.querySelector('.modal__close');
+    this.backBtn = this.modal.querySelector('.modal__back');
     this.form = this.modal.querySelector('#signup-form');
     this.messageEl = this.modal.querySelector('.modal__message');
     this.nameEl = this.modal.querySelector('#signup-name');
+    this.lastNameEl = this.modal.querySelector('#signup-last-name');
+    this.phoneEl = this.modal.querySelector('#signup-phone');
+    this.addressEl = this.modal.querySelector('#signup-address');
     this.emailEl = this.modal.querySelector('#signup-email');
     this.passwordEl = this.modal.querySelector('#signup-password');
     this.confirmPasswordEl = this.modal.querySelector('#signup-confirm-password');
@@ -594,6 +743,14 @@ class SignupModal {
   bindEvents() {
     if (this.overlay) this.overlay.addEventListener('click', () => this.close());
     if (this.closeBtn) this.closeBtn.addEventListener('click', () => this.close());
+    if (this.backBtn) {
+      this.backBtn.addEventListener('click', () => {
+        this.close();
+        if (window.premiumLogin && typeof window.premiumLogin.open === 'function') {
+          window.premiumLogin.open();
+        }
+      });
+    }
 
     if (this.form) {
       this.form.addEventListener('submit', (event) => {
@@ -624,26 +781,20 @@ class SignupModal {
 
   async handleSubmit() {
     const name = this.nameEl ? this.nameEl.value.trim() : '';
+    const last_name = this.lastNameEl ? this.lastNameEl.value.trim() : '';
+    const phone = this.phoneEl ? this.phoneEl.value.trim() : '';
+    const address = this.addressEl ? this.addressEl.value.trim() : '';
     const email = this.emailEl ? this.emailEl.value.trim() : '';
     const password = this.passwordEl ? this.passwordEl.value : '';
     const confirm = this.confirmPasswordEl ? this.confirmPasswordEl.value : '';
 
-    if (!name || !email || !password || !confirm) {
-      this.showMessage('Completa todos los campos.', 'error');
-      return;
-    }
-
-    if (password.length < 8) {
-      this.showMessage('La contrasena debe tener al menos 8 caracteres.', 'error');
-      return;
-    }
-    if (!/[A-Z]/.test(password) || !/\d/.test(password)) {
-      this.showMessage('La contrasena debe incluir una mayuscula y un numero.', 'error');
+    if (!name || !last_name || !phone || !address || !email || !password || !confirm) {
+      this.showMessage('Completa todos los campos obligatorios.', 'error');
       return;
     }
 
     if (password !== confirm) {
-      this.showMessage('Las contrasenas no coinciden.', 'error');
+      this.showMessage('Las contraseñas no coinciden.', 'error');
       return;
     }
 
@@ -652,7 +803,8 @@ class SignupModal {
       const response = await fetch(`${API_BASE}/api/v1/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
+        credentials: 'include',
+        body: JSON.stringify({ name, last_name, phone, address, email, password }),
       });
 
       const data = await response.json();
@@ -667,9 +819,6 @@ class SignupModal {
         localStorage.setItem('normalLogged', 'true');
         localStorage.setItem('premiumLogged', 'false');
         localStorage.setItem('userEmail', email);
-        if (data.token) {
-          localStorage.setItem('authToken', data.token);
-        }
       }
       this.showMessage('Cuenta creada correctamente. Sesion iniciada.', 'success');
       setTimeout(() => this.close(), 700);
@@ -686,22 +835,79 @@ class SignupModal {
 }
 
 function setupWishlist() {
-  document.addEventListener('click', (event) => {
+  const API = window.API_BASE || '';
+
+  async function loadUserFavorites() {
+    try {
+      const response = await fetch(`${API}/api/v1/me/favorites`, {
+        credentials: 'include',
+      });
+      if (!response.ok) return;
+      const data = await response.json();
+      const favIds = new Set((data.data || []).map((p) => String(p.id)));
+
+      document.querySelectorAll('.btn-wishlist').forEach((btn) => {
+        const productId = btn.dataset.wishlist;
+        const isFav = favIds.has(productId);
+        btn.classList.toggle('active', isFav);
+        const heart = btn.querySelector('.heart');
+        if (heart) heart.textContent = isFav ? '♥' : '♡';
+      });
+    } catch {
+      // Silently fail
+    }
+  }
+
+  document.addEventListener('click', async (event) => {
     const button = event.target.closest('.btn-wishlist');
     if (!button) return;
 
     event.preventDefault();
-    button.classList.toggle('active');
-    
-    const heart = button.querySelector('.heart');
-    const icon = button.classList.contains('active') ? '♥' : '♡';
-    
-    if (heart) {
-      heart.textContent = icon;
-    } else {
-      button.textContent = icon;
+    const isAuth = window.sessionManager && typeof window.sessionManager.isAuthenticated === 'function'
+      ? window.sessionManager.isAuthenticated()
+      : false;
+    if (!isAuth) {
+      if (window.premiumLogin) window.premiumLogin.open();
+      return;
+    }
+
+    const productId = button.dataset.wishlist;
+    const isActive = button.classList.contains('active');
+
+    try {
+      if (isActive) {
+        await fetch(`${API}/api/v1/me/favorites/${productId}`, {
+          method: 'DELETE',
+          credentials: 'include',
+        });
+        button.classList.remove('active');
+        const heart = button.querySelector('.heart');
+        if (heart) heart.textContent = '♡';
+      } else {
+        await fetch(`${API}/api/v1/me/favorites`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({ productId: Number(productId) }),
+        });
+        button.classList.add('active');
+        const heart = button.querySelector('.heart');
+        if (heart) heart.textContent = '♥';
+      }
+    } catch {
+      // Silently fail
     }
   });
+
+  // Load favorites state after products render
+  document.addEventListener('ElRinconAzul:session-changed', () => {
+    setTimeout(loadUserFavorites, 500);
+  });
+
+  // Also try to load on initial render
+  setTimeout(loadUserFavorites, 1000);
 }
 
 let productManager;
@@ -726,6 +932,20 @@ document.addEventListener('DOMContentLoaded', () => {
   window.scrollAnimations = scrollAnimations;
   window.premiumLogin = premiumLogin;
   window.signupModal = signupModal;
+
+  // Control de transparencia del header al hacer scroll
+  const header = document.querySelector('.header');
+  if (header) {
+    const handleScroll = () => {
+      if (window.scrollY > 20) {
+        header.classList.add('header--scrolled');
+      } else {
+        header.classList.remove('header--scrolled');
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Ejecutar al inicio por si ya hay scroll
+  }
 
   safeLog('Frontend inicializado correctamente', 'success');
 });

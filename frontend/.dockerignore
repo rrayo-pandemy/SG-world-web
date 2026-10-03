@@ -1,0 +1,7 @@
+dev-server.js
+uploads/
+node_modules/
+*.md
+.git
+.gitignore
+.editorconfig

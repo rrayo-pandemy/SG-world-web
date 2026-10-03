@@ -4,9 +4,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="ElRinconAzul - ecommerce moderno, seguro y optimizado para 2026-2027.">
-    <meta name="keywords" content="ecommerce, tienda online, ElRinconAzul, premium">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta name="description" content="Ganesh - ecommerce moderno, seguro y optimizado para 2026-2027.">
+    <meta name="keywords" content="ecommerce, tienda online, Ganesh, premium">
     <meta name="theme-color" content="#0b3c5d">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Ganesh - Ecommerce Premium">
+    <meta property="og:description" content="Tienda online premium con arquitectura segura y diseño moderno.">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="es_PE">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Ganesh - Ecommerce Premium">
+    <meta name="twitter:description" content="Tienda online premium con arquitectura segura y diseño moderno.">
     <script>
         (function () {
             try {
@@ -18,15 +28,43 @@
         })();
     </script>
     <script>
-        window.API_BASE = window.location.origin;
-        if (window.location.port === '8000') {
-            // Asegura que las llamadas a la API funcionen desde otros dispositivos en la red local
-            window.API_BASE = window.location.protocol + '//' + window.location.hostname + ':5000';
-        }
+        // Configuración de API dinámica para LAN/WAN
+        (function () {
+            function normalizeApiBase(value) {
+                if (!value) return '';
+                try {
+                    var parsed = new URL(value.trim());
+                    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return '';
+                    return parsed.origin;
+                } catch (e) {
+                    return '';
+                }
+            }
+
+            var urlParams = new URLSearchParams(window.location.search);
+            var apiOverride = normalizeApiBase(urlParams.get('api'));
+            if (!apiOverride && /^\?https?:\/\//i.test(window.location.search)) {
+                apiOverride = normalizeApiBase(window.location.search.slice(1));
+            }
+            if (apiOverride) {
+                localStorage.setItem('wan_api_base', apiOverride);
+                console.log('API Base sobrescrita por URL:', apiOverride);
+            }
+
+            var savedWanApi = normalizeApiBase(localStorage.getItem('wan_api_base'));
+            window.API_BASE = savedWanApi || window.location.origin;
+
+            if (!savedWanApi && window.location.port === '8000') {
+                window.API_BASE = window.location.protocol + '//' + window.location.hostname + ':5000';
+            }
+
+            console.log('API_BASE actual:', window.API_BASE);
+        })();
     </script>
-    <title>ElRinconAzul - Ecommerce Premium</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <title>Ganesh - Ecommerce Premium</title>
+    <link rel="stylesheet" href="css/styles.css?v=2.1">
     <link rel="stylesheet" href="css/accessibility.css">
+
 </head>
 
 <body>
@@ -44,13 +82,18 @@
                         </linearGradient>
                     </defs>
                 </svg>
-                <span class="logo-text">ElRinconAzul</span>
+                <span class="logo-text">Ganesh</span>
             </a>
 
             <nav class="nav" role="navigation" aria-label="Menu principal">
                 <ul class="nav__list">
                     <li><a href="#inicio" class="nav__link">Inicio</a></li>
                     <li><a href="#promociones" class="nav__link">Promociones</a></li>
+                    <li><a href="index.html#premium-membership" class="nav__link">Premium</a></li>
+                    <li class="nav-mobile-only" data-auth-panel hidden><a href="profile.html" class="nav__link">Mi
+                            Perfil</a></li>
+                    <li class="nav-mobile-only" data-auth-panel hidden><a href="#" class="nav__link"
+                            data-auth-logout>Cerrar Sesión</a></li>
                     <li class="nav__item nav__item--dropdown">
                         <a href="#productos" class="nav__link" aria-haspopup="true" aria-expanded="false">Productos</a>
                         <ul class="nav__dropdown" aria-label="Categorias de productos">
@@ -78,20 +121,23 @@
                     href="#premium-membership">Iniciar Sesion</a>
                 <a class="btn btn--premium btn--header-cta" data-premium-upgrade href="#premium-membership"
                     hidden>Hacerme Premium</a>
-                <div class="header-account" data-auth-panel hidden>
-                    <div class="header-account__meta">
-                        <span class="header-account__name" data-auth-name>Cliente</span>
-                        <span class="header-account__cart" data-auth-cart>Carrito: 0 productos</span>
-                    </div>
-                </div>
-                <button class="header-account__logout" data-auth-logout data-auth-panel type="button" hidden>Cerrar
-                    sesion</button>
+
                 <button class="cart-toggle" aria-label="Abrir carrito de compras" aria-expanded="false">
                     🛒
                     <svg class="cart-icon" viewBox="0 0 24 24" width="24" height="24">
                     </svg>
                     <span class="cart-badge">0</span>
                 </button>
+
+                <div class="header-account" data-auth-panel hidden>
+                    <div class="header-account__meta">
+                        <span class="header-account__name" data-auth-name>Cliente</span>
+                        <span class="header-account__cart" data-auth-cart>Carrito: 0 productos</span>
+                    </div>
+                    <a href="profile.html" class="btn btn--secondary btn--header-cta header-profile-link">Mi Perfil</a>
+                </div>
+                <button class="header-account__logout" data-auth-logout data-auth-panel type="button" hidden>Cerrar
+                    sesion</button>
             </div>
 
             <button class="menu-toggle" aria-label="Menu movil" aria-expanded="false">
@@ -132,7 +178,7 @@
     <div id="premium-login-modal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="modal-title">
         <div class="modal__overlay"></div>
         <div class="modal__panel" role="document">
-            <button class="modal__close" aria-label="Cerrar dialogo">&times;</button>
+            <button class="modal__close" aria-label="Cerrar dialogo"><span class="close-icon">&times;</span></button>
             <h2 id="modal-title" class="modal__title">Acceso</h2>
             <p class="modal__subtitle">Inicia sesión para habilitar el carrito de compras y el catálogo.</p>
             <form id="premium-login-form" class="modal__form">
@@ -157,13 +203,31 @@
     <div id="signup-modal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="signup-modal-title">
         <div class="modal__overlay"></div>
         <div class="modal__panel" role="document">
-            <button class="modal__close" aria-label="Cerrar dialogo">&times;</button>
+            <button class="modal__back" aria-label="Volver al acceso">
+                <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor"
+                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 18l-6-6 6-6" />
+                </svg>
+            </button>
+            <button class="modal__close" aria-label="Cerrar dialogo"><span class="close-icon">&times;</span></button>
             <h2 id="signup-modal-title" class="modal__title">Crear cuenta</h2>
-            <p class="modal__subtitle">Registrate para guardar pedidos y continuar compras.</p>
+            <p class="modal__subtitle">Regístrate para guardar pedidos. Tu contraseña debe tener al menos 9 caracteres, una mayúscula, un número y un carácter especial.</p>
             <form id="signup-form" class="modal__form">
                 <div class="form-group">
                     <label for="signup-name">Nombre</label>
                     <input type="text" id="signup-name" name="name" placeholder="Tu nombre" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-last-name">Apellidos</label>
+                    <input type="text" id="signup-last-name" name="last_name" placeholder="Tus apellidos" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-phone">Telefono</label>
+                    <input type="tel" id="signup-phone" name="phone" placeholder="Tu telefono" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-address">Direccion</label>
+                    <input type="text" id="signup-address" name="address" placeholder="Tu direccion" required>
                 </div>
                 <div class="form-group">
                     <label for="signup-email">Correo Electronico</label>
@@ -171,7 +235,7 @@
                 </div>
                 <div class="form-group">
                     <label for="signup-password">Contrasena</label>
-                    <input type="password" id="signup-password" name="password" placeholder="Minimo 8 caracteres"
+                    <input type="password" id="signup-password" name="password" placeholder="Min. 9 chars: Aa1@..."
                         required>
                 </div>
                 <div class="form-group">
@@ -325,7 +389,7 @@
                 </div>
 
                 <div class="contact-grid">
-                    <a href="https://wa.me/34123456789" target="_blank" rel="noopener noreferrer"
+                    <a href="https://wa.me/51949986820" target="_blank" rel="noopener noreferrer"
                         class="contact-btn scroll-reveal" aria-label="Contactar por WhatsApp">
                         <svg viewBox="0 0 24 24" width="32" height="32" aria-hidden="true">
                             <path fill="currentColor"
@@ -333,7 +397,7 @@
                         </svg>
                         <div class="contact-info">
                             <h3>WhatsApp</h3>
-                            <p>+34 123 456 789</p>
+                            <p>+51 949 986 820</p>
                         </div>
                     </a>
                     <a href="mailto:soporte@elrinconazul.com" class="contact-btn scroll-reveal"
@@ -347,7 +411,7 @@
                             <p>soporte@elrinconazul.com</p>
                         </div>
                     </a>
-                    <a href="tel:+34123456789" class="contact-btn scroll-reveal" style="--reveal-delay: 0.2s"
+                    <a href="tel:+51949896820" class="contact-btn scroll-reveal" style="--reveal-delay: 0.2s"
                         aria-label="Llamar por telefono">
                         <svg viewBox="0 0 24 24" width="32" height="32" aria-hidden="true">
                             <path fill="none" stroke="currentColor" stroke-width="1.5"
@@ -355,7 +419,7 @@
                         </svg>
                         <div class="contact-info">
                             <h3>Telefono</h3>
-                            <p>+34 123 456 789</p>
+                            <p>+51 949 986 820</p>
                         </div>
                     </a>
                 </div>
@@ -366,7 +430,7 @@
             <div class="container">
                 <div class="about-content">
                     <div class="about-text scroll-reveal">
-                        <h2>Sobre El Rincon Azul</h2>
+                        <h2>Sobre Ganesh</h2>
                         <p>Combinamos diseño UX/UI, arquitectura segura y procesos de calidad para crear un ecommerce
                             utilizable en escenarios reales.</p>
                         <h3>Valores de operacion</h3>
@@ -407,7 +471,7 @@
     <footer class="footer" role="contentinfo">
         <div class="footer-content">
             <div class="footer-section">
-                <h3>El Rincon Azul</h3>
+                <h3>Ganesh</h3>
                 <p>Tienda online premium con arquitectura lista para crecer.</p>
             </div>
             <div class="footer-section">
@@ -439,10 +503,11 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2026 ElRinconAzul. Plataforma ecommerce segura y escalable.</p>
+            <p>&copy; 2026 Ganesh. Plataforma ecommerce segura y escalable.</p>
         </div>
     </footer>
 
+    <script src="js/api-config.js" defer></script>
     <script src="js/theme-manager.js" defer></script>
     <script src="js/session.js" defer></script>
     <script src="js/main.js" defer></script>
