@@ -44,5 +44,6 @@ build/
 coverage/
 
 # Sensitive project data (avoid committing PII or uploads)
+backend/data/
 backend/src/data/
 frontend/uploads/
