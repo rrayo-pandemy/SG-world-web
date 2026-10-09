@@ -10,8 +10,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <meta name="description" content="Detalle del producto - Ganesh">
-    <meta name="theme-color" content="#0b3c5d">
+    <meta name="description" content="Consulta detalles, disponibilidad y opiniones del catálogo de Empresa de Servicios Generales.">
+    <meta name="theme-color" content="#183b32">
     <script src="runtime-config.js"></script>
     <script>
         (function () {
@@ -42,71 +42,61 @@
             if (!apiOverride && /^\?https?:\/\//i.test(window.location.search)) {
                 apiOverride = normalizeApiBase(window.location.search.slice(1));
             }
-            if (apiOverride) {
-                localStorage.setItem('wan_api_base', apiOverride);
+            var savedWanApi = '';
+            try {
+                if (apiOverride) localStorage.setItem('wan_api_base', apiOverride);
+                savedWanApi = normalizeApiBase(localStorage.getItem('wan_api_base'));
+            } catch (e) {
+                // Storage may be unavailable for local files or restricted sessions.
             }
-            var savedWanApi = normalizeApiBase(localStorage.getItem('wan_api_base'));
             window.API_BASE = savedWanApi || window.DEPLOY_API_BASE || window.location.origin;
             if (!savedWanApi && window.location.port === '8000') {
                 window.API_BASE = window.location.protocol + '//' + window.location.hostname + ':5000';
             }
         })();
     </script>
-    <title>Ganesh - Detalle de Producto</title>
+    <title>Detalle del cat&#225;logo | Empresa de Servicios Generales</title>
     <link rel="stylesheet" href="css/styles.css?v=2.1">
-    <link rel="stylesheet" href="css/product-detail.css?v=2.1">
+    <link rel="stylesheet" href="css/scroll-world.css?v=2.1">
+    <link rel="stylesheet" href="css/product-detail.css?v=2.2">
     <link rel="stylesheet" href="css/accessibility.css?v=2.1">
 </head>
 
-<body>
+<body class="product-page" id="top">
     <!-- Header (same as index) -->
     <header class="header" role="banner">
         <div class="header__container">
-            <div class="header__logo">
-                <a href="index.html"
-                    style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit;">
-                    <svg class="logo-icon" viewBox="0 0 32 32" width="32" height="32">
-                        <circle cx="16" cy="16" r="14" fill="url(#gradient)" opacity="0.9" />
-                        <path d="M16 6 L22 14 L22 26 L10 26 L10 14 Z" fill="none" stroke="currentColor"
-                            stroke-width="1.5" />
-                        <defs>
-                            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#00d4ff;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#0099cc;stop-opacity:1" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                    <span class="logo-text">Ganesh</span>
-                </a>
-            </div>
-
+            <a href="index.html" class="header__logo" aria-label="Empresa de Servicios Generales, inicio">
+                <span class="service-mark" aria-hidden="true">SG</span>
+                <span class="logo-text">Servicios Generales</span>
+            </a>
             <nav class="nav" role="navigation" aria-label="Menú principal">
                 <ul class="nav__list">
                     <li><a href="index.html" class="nav__link">Inicio</a></li>
                     <li class="nav-mobile-only" data-auth-panel hidden><a href="profile.html" class="nav__link">Mi Perfil</a></li>
-                    <li class="nav-mobile-only" data-auth-panel hidden><a href="#" class="nav__link" data-auth-logout>Cerrar Sesión</a></li>
+                    <li class="nav-mobile-only" data-auth-panel hidden><a href="#" class="nav__link" data-auth-logout>Cerrar sesión</a></li>
                     <li class="nav__item nav__item--dropdown">
-                        <a href="index.html#productos" class="nav__link" aria-haspopup="true" aria-expanded="false">Productos</a>
-                        <ul class="nav__dropdown" aria-label="Categorias de productos">
-                            <li><a href="index.html#productos" class="nav__dropdown-link" data-filter="all">Todos</a></li>
+                        <a href="index.html#productos" class="nav__link" aria-haspopup="true" aria-expanded="false">Servicios</a>
+                        <ul class="nav__dropdown" aria-label="Categorías de servicios">
+                            <li><a href="index.html#productos" class="nav__dropdown-link" data-filter="all">Todos los servicios</a></li>
                         </ul>
                     </li>
-                    <li><a href="index.html#como-comprar" class="nav__link">Cómo Comprar</a></li>
-                    <li><a href="index.html#about" class="nav__link">Sobre Nosotros</a></li>
+                    <li><a href="index.html#como-comprar" class="nav__link">Cómo trabajamos</a></li>
+                    <li><a href="index.html#contacto" class="nav__link">Contacto</a></li>
                 </ul>
             </nav>
-
             <div class="header__actions">
-                <button class="theme-toggle" aria-label="Activar modo oscuro" aria-pressed="false" data-theme-glyph="☾"
-                    title="Alternar modo oscuro">
+                <button class="theme-toggle" aria-label="Activar modo oscuro" aria-pressed="false" data-theme-glyph="☾" title="Alternar modo oscuro" type="button">
                     <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-                        <path d="M21 12.79A9 9 0 0111.21 3c0 .34.02.67.05 1A7 7 0 1019 19.74c.33.03.66.05 1 .05z"
-                            fill="currentColor" />
+                        <path d="M21 12.79A9 9 0 0111.21 3c0 .34.02.67.05 1A7 7 0 1019 19.74c.33.03.66.05 1 .05z" fill="currentColor" />
                     </svg>
                 </button>
-                <a class="btn btn--secondary btn--header-cta premium-login" data-auth-login href="#">Iniciar Sesion</a>
-                <a class="btn btn--premium btn--header-cta" data-premium-upgrade href="index.html#premium-membership"
-                    hidden>Hacerme Premium</a>
+                <a class="btn btn--secondary btn--header-cta premium-login" data-auth-login href="#">Acceso clientes</a>
+                <a class="btn btn--premium btn--header-cta" data-premium-upgrade href="index.html#premium-membership" hidden>Hacerme Premium</a>
+                <button class="cart-toggle" aria-label="Abrir carrito de compras" aria-expanded="false" type="button">
+                    <svg class="cart-icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h8.9a2 2 0 0 0 1.9-1.4L22 8H6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="20" r="1" fill="currentColor"/><circle cx="18" cy="20" r="1" fill="currentColor"/></svg>
+                    <span class="cart-badge">0</span>
+                </button>
                 <div class="header-account" data-auth-panel hidden>
                     <div class="header-account__meta">
                         <span class="header-account__name" data-auth-name>Cliente</span>
@@ -114,19 +104,9 @@
                     </div>
                     <a href="profile.html" class="btn btn--secondary btn--header-cta header-profile-link">Mi Perfil</a>
                 </div>
-                <button class="header-account__logout" data-auth-logout data-auth-panel type="button" hidden>Cerrar
-                    sesion</button>
-                <button class="cart-toggle" aria-label="Abrir carrito de compras" aria-expanded="false">
-                    🛒
-                    <span class="cart-badge">0</span>
-                </button>
+                <button class="header-account__logout" data-auth-logout data-auth-panel type="button" hidden>Cerrar sesión</button>
             </div>
-
-            <button class="menu-toggle" aria-label="Menú móvil" aria-expanded="false">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
+            <button class="menu-toggle" aria-label="Menú móvil" aria-expanded="false" type="button"><span></span><span></span><span></span></button>
         </div>
     </header>
 
@@ -219,94 +199,76 @@
 
     <div class="cart-overlay" aria-hidden="true"></div>
 
-    <!-- Main Content -->
     <main role="main">
-        <!-- Breadcrumb -->
         <nav aria-label="Migas de pan" class="breadcrumb">
             <div class="container">
                 <a href="index.html">Inicio</a>
-                <span>/</span>
-                <a href="index.html#productos">Catálogo</a>
-                <span>/</span>
+                <span aria-hidden="true">/</span>
+                <a href="index.html#productos">Servicios y catálogo</a>
+                <span aria-hidden="true">/</span>
                 <span id="breadcrumb-product" aria-current="page">Producto</span>
             </div>
         </nav>
 
-        <!-- Product Detail Section -->
-        <section class="product-detail" style="position: relative;">
+        <section class="product-detail" aria-labelledby="product-name">
             <div class="container">
                 <div class="product-detail__grid">
-                    <!-- Product Images -->
                     <div class="product-detail__images">
                         <div class="product-detail__main-image" data-motion-script-trigger>
-                            <img id="main-image" src="" alt="Imagen principal del producto" loading="eager" fetchpriority="high" decoding="async">
+                            <p class="product-detail__image-placeholder" id="main-image-placeholder" role="status" aria-live="polite">Cargando imagen del producto...</p>
                         </div>
-                        <div class="product-detail__thumbnails">
-                            <button class="product-detail__thumbnail active" data-image="0" aria-label="Imagen 1">
-                                <img id="thumb-0" src="" alt="Miniatura 1" loading="lazy" decoding="async">
-                            </button>
-                        </div>
+                        <p class="product-detail__image-note">Imagen referencial del artículo</p>
                     </div>
 
-                    <!-- Product Info -->
                     <div class="product-detail__content">
-                        <!-- Breadcrumb productName -->
                         <h1 id="product-name" class="product-detail__title">Cargando...</h1>
 
-                        <!-- Rating -->
                         <div class="product-detail__rating">
-                            <div class="stars" id="product-rating">
-                                <span class="star">★</span>
-                                <span class="star">★</span>
-                                <span class="star">★</span>
-                                <span class="star">★</span>
-                                <span class="star">★</span>
+                            <div class="stars" id="product-rating" aria-label="Sin reseñas">
+                                <span class="star" aria-hidden="true">☆</span>
+                                <span class="star" aria-hidden="true">☆</span>
+                                <span class="star" aria-hidden="true">☆</span>
+                                <span class="star" aria-hidden="true">☆</span>
+                                <span class="star" aria-hidden="true">☆</span>
                             </div>
-                            <span class="rating-text" id="rating-text">(0 reseñas)</span>
+                            <span class="rating-text" id="rating-text">Sin reseñas</span>
                         </div>
 
-                        <!-- Price -->
                         <div class="product-detail__price">
-                            <span class="price-label">Precio:</span>
-                            <span class="price-current" id="product-price">S/. 0.00</span>
+                            <span class="price-label">Precio</span>
+                            <span class="price-current" id="product-price">S/ 0.00</span>
                         </div>
 
-                        <!-- Stock Status -->
                         <div class="product-detail__stock" id="stock-status">
-                            <span class="stock-label">En stock:</span>
-                            <span class="stock-value" id="stock-count">-</span>
+                            <span class="stock-label">Disponibilidad</span>
+                            <span class="stock-value" id="stock-count" aria-live="polite">Consultando...</span>
                         </div>
 
-                        <!-- Description -->
                         <div class="product-detail__description">
                             <h2>Descripción</h2>
                             <p id="product-description">Cargando descripción...</p>
                         </div>
 
-                        <!-- Add to Cart Section -->
                         <div class="product-detail__actions">
                             <div class="quantity-selector">
-                                <label for="quantity">Cantidad:</label>
+                                <label for="quantity">Cantidad</label>
                                 <div class="quantity-buttons">
-                                    <button class="qty-btn" id="qty-minus" aria-label="Reducir cantidad">-</button>
-                                    <input type="number" id="quantity" value="1" min="1" max="99"
-                                        aria-label="Cantidad a comprar">
-                                    <button class="qty-btn" id="qty-plus" aria-label="Aumentar cantidad">+</button>
+                                    <button class="qty-btn" id="qty-minus" aria-label="Reducir cantidad" type="button">−</button>
+                                    <input type="number" id="quantity" value="1" min="1" max="99" aria-label="Cantidad a comprar">
+                                    <button class="qty-btn" id="qty-plus" aria-label="Aumentar cantidad" type="button">+</button>
                                 </div>
                             </div>
-
-                            <button class="btn btn--primary btn--lg" id="btn-add-cart" style="margin-top: 1rem;">
-                                Añadir al Carrito
-                                <span class="btn__arrow">→</span>
+                            <button class="btn btn--primary btn--lg" id="btn-add-cart" type="button">
+                                Añadir al carrito <span class="btn__arrow" aria-hidden="true">→</span>
                             </button>
-
-                            <button class="btn-wishlist" id="btn-wishlist" title="Añadir a favoritos"><span
-                                    class="heart">♡</span></button>
+                            <button class="btn-wishlist" id="btn-wishlist" title="Añadir a favoritos" aria-label="Añadir a favoritos" type="button">
+                                <span class="heart" aria-hidden="true">♡</span>
+                            </button>
+                            <p class="product-detail__cart-status" id="cart-action-status" role="status" aria-live="polite"></p>
                         </div>
 
-                        <!-- Product Details -->
-                        <details class="product-detail__specs" open>
-                            <summary>Características técnicas</summary>
+                        <details class="product-detail__specs">
+                            <summary>Características del producto</summary>
                             <ul id="product-specs">
                                 <li>Cargando características...</li>
                             </ul>
@@ -316,60 +278,46 @@
             </div>
         </section>
 
-        <!-- Product Reviews Section -->
-        <section class="product-reviews" id="reviews-section">
+        <section class="product-reviews" id="reviews-section" aria-labelledby="reviews-title">
             <div class="container">
                 <div class="product-reviews__header">
-                    <h2>Reseñas de Clientes</h2>
+                    <h2 id="reviews-title">Opiniones</h2>
                     <div class="product-reviews__summary">
-                        <div class="stars stars--large" id="avg-rating-stars">
-                            <span class="star">☆</span><span class="star">☆</span><span class="star">☆</span><span
-                                class="star">☆</span><span class="star">☆</span>
+                        <div class="stars stars--large" id="avg-rating-stars" aria-label="Sin reseñas">
+                            <span class="star" aria-hidden="true">☆</span><span class="star" aria-hidden="true">☆</span><span class="star" aria-hidden="true">☆</span><span class="star" aria-hidden="true">☆</span><span class="star" aria-hidden="true">☆</span>
                         </div>
-                        <span class="rating-value" id="avg-rating-value">0.0</span>
+                        <span class="rating-value" id="avg-rating-value">—</span>
                         <span class="rating-count" id="total-reviews-count">(0 reseñas)</span>
                     </div>
                 </div>
 
                 <div class="product-reviews__grid">
-                    <div class="product-reviews__list" id="reviews-list">
-                        <!-- Cargadas dinámicamente -->
-                        <p class="no-reviews">Aún no hay reseñas para este producto. ¡Sé el primero en calificarlo!</p>
+                    <div class="product-reviews__list" id="reviews-list" aria-live="polite">
+                        <p class="no-reviews">Aún no hay reseñas para este producto. Sé el primero en calificarlo.</p>
                     </div>
 
                     <div class="product-reviews__form-container">
                         <div id="review-form-auth" hidden>
                             <h3>Deja tu opinión</h3>
                             <form id="review-form" class="review-form">
-                                <div class="form-group">
-                                    <label>Tu calificación:</label>
-                                    <div class="star-rating-input">
-                                        <input type="radio" name="rating" value="5" id="star-5" required><label
-                                            for="star-5" title="5 estrellas">★</label>
-                                        <input type="radio" name="rating" value="4" id="star-4"><label for="star-4"
-                                            title="4 estrellas">★</label>
-                                        <input type="radio" name="rating" value="3" id="star-3"><label for="star-3"
-                                            title="3 estrellas">★</label>
-                                        <input type="radio" name="rating" value="2" id="star-2"><label for="star-2"
-                                            title="2 estrellas">★</label>
-                                        <input type="radio" name="rating" value="1" id="star-1"><label for="star-1"
-                                            title="1 estrella">★</label>
-                                    </div>
+                                <fieldset class="form-group star-rating-fieldset"><legend>Tu calificación:</legend><div class="star-rating-input">
+                                        <input type="radio" name="rating" value="5" id="star-5" required><label for="star-5" title="5 estrellas">★</label>
+                                        <input type="radio" name="rating" value="4" id="star-4"><label for="star-4" title="4 estrellas">★</label>
+                                        <input type="radio" name="rating" value="3" id="star-3"><label for="star-3" title="3 estrellas">★</label>
+                                        <input type="radio" name="rating" value="2" id="star-2"><label for="star-2" title="2 estrellas">★</label>
+                                        <input type="radio" name="rating" value="1" id="star-1"><label for="star-1" title="1 estrella">★</label>
+                                    </div></fieldset><div class="form-group"><label for="review-comment">Tu comentario:</label>
+                                    <textarea id="review-comment" rows="4" placeholder="Cuéntanos qué te pareció el producto..." required></textarea>
                                 </div>
-                                <div class="form-group">
-                                    <label for="review-comment">Tu comentario:</label>
-                                    <textarea id="review-comment" rows="4"
-                                        placeholder="Cuéntanos qué te pareció el producto..." required></textarea>
-                                </div>
-                                <div id="review-form-status" class="form-status"></div>
-                                <button type="submit" class="btn btn--primary">Publicar Reseña</button>
+                                <div id="review-form-status" class="form-status" role="status" aria-live="polite"></div>
+                                <button type="submit" class="btn btn--primary">Publicar opinión</button>
                             </form>
                         </div>
                         <div id="review-form-guest">
                             <div class="guest-card">
-                                <h3>¿Te gustó este producto?</h3>
+                                <h3>¿Qué te pareció?</h3>
                                 <p>Inicia sesión para compartir tu experiencia con otros usuarios.</p>
-                                <button class="btn btn--secondary premium-login">Iniciar Sesión / Registrarme</button>
+                                <button class="btn btn--secondary premium-login" type="button">Iniciar sesión / Registrarme</button>
                             </div>
                         </div>
                     </div>
@@ -377,67 +325,29 @@
             </div>
         </section>
 
-        <!-- Recommendations Section -->
-        <section class="product-recommendations">
+        <section class="product-recommendations" aria-labelledby="recommendations-title">
             <div class="container">
-                <h2>Productos Relacionados</h2>
-                <div class="products-grid" id="recommendations-grid">
-                    <!-- Cargadas dinámicamente -->
-                </div>
-            </div>
-        </section>
-
-        <!-- Trust Section -->
-        <section class="trust-section">
-            <div class="trust-container">
-                <div class="trust-item scroll-reveal">
-                    <div class="trust-icon">🔒</div>
-                    <h3>100% Seguro</h3>
-                    <p>Transacciones cifradas con HTTPS</p>
-                </div>
-                <div class="trust-item scroll-reveal">
-                    <div class="trust-icon">✓</div>
-                    <h3>Garantía</h3>
-                    <p>Devolución en 30 días sin preguntas</p>
-                </div>
-                <div class="trust-item scroll-reveal">
-                    <div class="trust-icon">⚡</div>
-                    <h3>Entrega Rápida</h3>
-                    <p>Envío en 2-3 días hábiles</p>
-                </div>
+                <h2 id="recommendations-title">También puede interesarte</h2>
+                <div id="recommendations-grid" aria-live="polite"></div>
             </div>
         </section>
     </main>
 
     <!-- Footer (mismo que index) -->
-    <footer class="footer" role="contentinfo">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h4>Ganesh</h4>
-                <p>Tienda online de productos curados y premium.</p>
-            </div>
-            <div class="footer-section">
-                <h4>Enlaces</h4>
-                <ul>
-                    <li><a href="index.html">Inicio</a></li>
-                    <li><a href="index.html#productos">Catálogo</a></li>
-                    <li><a href="#">Políticas</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h4>Contacto</h4>
-                <p>📧 info@elrinconazul.com</p>
-                <p>📱 +34 600 000 000</p>
-            </div>
-            <div class="footer-section">
-                <h4>Seguridad</h4>
-                <p>✓ ISO 27001 (Seguridad de Información)</p>
-                <p>✓ PCI-DSS Compliant</p>
-            </div>
+    <footer class="world-footer" id="about" role="contentinfo">
+        <div class="world-footer__top">
+            <a href="index.html" class="world-footer__brand"><span class="service-mark" aria-hidden="true">SG</span><span>Empresa de<br>Servicios Generales</span></a>
+            <p>Instalaciones y mantenimiento<br>para hogares y empresas.</p>
+            <nav aria-label="Navegaci&oacute;n del pie de p&aacute;gina">
+                <a href="index.html#productos">Servicios</a>
+                <a href="index.html#como-comprar">C&oacute;mo trabajamos</a>
+                <a href="index.html#contacto">Contacto</a>
+                <a href="mailto:soporte@ganesh.com">soporte@ganesh.com</a>
+                <a href="tel:+51949303706">+51 949 303 706</a>
+            </nav>
+            <a class="world-footer__top-link" href="#top">Volver arriba <span aria-hidden="true">&uarr;</span></a>
         </div>
-        <div class="footer-bottom">
-            <p>&copy; 2026 Ganesh. Todos los derechos reservados.</p>
-        </div>
+        <div class="world-footer__bottom"><span>&copy; 2026 Empresa de Servicios Generales</span><span>Agua &middot; energ&iacute;a &middot; espacios</span></div>
     </footer>
 
     <!-- Scripts -->
