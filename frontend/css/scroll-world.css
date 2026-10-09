@@ -884,6 +884,7 @@ textarea {
     margin: clamp(4rem, 8vw, 8rem) auto 0;
     padding-top: clamp(2rem, 4vw, 4rem);
     border-top: 1px solid var(--world-line);
+    scroll-margin-top: 6.5rem;
 }
 
 .world-catalog__heading {

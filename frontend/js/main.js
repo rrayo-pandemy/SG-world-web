@@ -471,9 +471,27 @@ class Navigation {
     if (this.dropdownToggle && this.dropdownItem) {
       this.dropdownToggle.addEventListener('click', (event) => {
         if (!this.isDesktopHoverMode()) {
-          event.preventDefault();
-          const willOpen = !this.dropdownItem.classList.contains('active');
-          this.setDropdownOpen(willOpen);
+          const destination = new URL(this.dropdownToggle.href, window.location.href);
+          const isSamePage = destination.origin === window.location.origin &&
+            destination.pathname === window.location.pathname &&
+            destination.search === window.location.search;
+
+          this.setDropdownOpen(false);
+
+          if (isSamePage) {
+            event.preventDefault();
+            const target = document.getElementById('productos');
+            if (target) {
+              const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+              target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+            }
+          }
+
+          if (this.menuToggle && this.nav && this.nav.classList.contains('open')) {
+            this.menuToggle.classList.remove('open');
+            this.nav.classList.remove('open');
+            this.menuToggle.setAttribute('aria-expanded', 'false');
+          }
         } else {
           this.setDropdownOpen(false);
         }

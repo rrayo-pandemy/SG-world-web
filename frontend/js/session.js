@@ -90,33 +90,53 @@
     }
 
     async fetchCurrentUser() {
+      let sawUnauthorized = false;
+      let sawUnavailable = false;
+
       for (const base of this.getApiBaseCandidates()) {
         try {
-          const response = await fetch(this.buildApiUrl(base, '/api/v1/me'), {
+          const response = await fetch(this.buildApiUrl(base, '/api/v1/me/profile'), {
             credentials: 'include',
           });
 
           if (response.status === 401) {
+            sawUnauthorized = true;
             continue;
           }
 
-          if (!response.ok) continue;
+          if (response.status === 404) {
+            return { unauthorized: true };
+          }
 
-          const data = await response.json();
+          if (!response.ok) {
+            sawUnavailable = true;
+            continue;
+          }
+
+          let data;
+          try {
+            data = await response.json();
+          } catch (_error) {
+            sawUnavailable = true;
+            continue;
+          }
+
           if (data && data.user) return { user: data.user };
+          sawUnavailable = true;
         } catch (_error) {
-          // Try next API base.
+          sawUnavailable = true;
         }
       }
 
-      return { unauthorized: true };
+      if (sawUnavailable) return { unavailable: true };
+      return { unauthorized: sawUnauthorized };
     }
 
     async hydrate() {
       const result = await this.fetchCurrentUser();
       if (result.user) {
         this.persistUser(result.user);
-      } else {
+      } else if (result.unauthorized) {
         this.clearSession({ emit: false });
       }
 
