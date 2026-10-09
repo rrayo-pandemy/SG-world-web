@@ -33,6 +33,9 @@ __pycache__/
 .DS_Store
 Thumbs.db
 .vscode/
+!.vscode/
+.vscode/*
+!.vscode/mcp.json
 
 # Build/cache
 dist/

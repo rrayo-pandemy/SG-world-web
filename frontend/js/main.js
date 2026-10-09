@@ -265,7 +265,7 @@ class ProductManager {
       const art = document.createElement('article');
       art.className = `product-card scroll-reveal ${product.isPremium ? 'product-card--premium' : ''}`;
       art.dataset.productId = String(product.id);
-      art.style.setProperty('--reveal-delay', `${index * 0.06}s`);
+      art.style.setProperty('--reveal-delay', `${Math.min(index * 45, 180)}ms`);
 
       const imgWrap = document.createElement('div');
       imgWrap.className = 'product-image';

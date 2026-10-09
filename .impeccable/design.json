@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-08",
+  "title": "Design System: Empresa de Servicios Generales",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Workshop Green",
+        "canonical": "#236955",
+        "tonalRamp": ["#10211b", "#173f32", "#236955", "#3d806a", "#65a08a", "#93b8a7", "#c2d9ce", "#e7f0eb"]
+      },
+      "accent-lime": {
+        "role": "accent",
+        "displayName": "Signal Lime",
+        "canonical": "#d4f542",
+        "tonalRamp": ["#25310c", "#455922", "#718a2c", "#99b639", "#bdd93a", "#d4f542", "#e3f77c", "#f0fac0"]
+      },
+      "neutral-bg": {
+        "role": "neutral",
+        "displayName": "Mineral Paper",
+        "canonical": "#edf0e9",
+        "tonalRamp": ["#141b16", "#343b34", "#58625a", "#7e887f", "#a2aca2", "#c4cec4", "#dee5dd", "#f1f4ee"]
+      },
+      "ink": {
+        "role": "text",
+        "displayName": "Work Ink",
+        "canonical": "#16231e",
+        "tonalRamp": ["#070d0a", "#0e1712", "#16231e", "#334139", "#5a665f", "#87918a", "#b9c1bb", "#ecefea"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Trade Condensed",
+        "purpose": "Large service identity and chapter headlines."
+      },
+      "body": {
+        "displayName": "Clear Work Sans",
+        "purpose": "Navigation, service descriptions, controls and long-form copy."
+      }
+    },
+    "shadows": [
+      {
+        "name": "header-glass",
+        "value": "0 1px 0 rgba(22, 35, 30, 0.2)",
+        "purpose": "Subtle separation under the sticky navigation."
+      }
+    ],
+    "motion": [
+      {
+        "name": "confident-arrival",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Short entrance of the opening message."
+      },
+      {
+        "name": "scroll-image-drift",
+        "value": "view() timeline; scale(1.1) to scale(1.02)",
+        "purpose": "Subtle image movement tied to its service chapter entering and leaving the viewport."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "prefers-reduced-motion: reduce",
+        "purpose": "Disable nonessential movement and preserve readable content."
+      }
+    ],
+    "breakpoints": [
+      { "name": "compact-mobile", "value": "480px" },
+      { "name": "mobile-tablet", "value": "800px" },
+      { "name": "tablet-desktop", "value": "1100px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Action",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main action on the light or image-led surfaces.",
+      "html": "<a class=\"ds-action\" href=\"#contacto\">Explorar servicios <span aria-hidden=\"true\">↘</span></a>",
+      "css": ".ds-action{min-height:55px;display:inline-flex;align-items:center;justify-content:center;gap:20px;padding:13px 20px;border:1px solid transparent;border-radius:999px;background:#d4f542;color:#16231e;font:700 12px 'DM Sans',sans-serif;text-decoration:none;transition:background-color 180ms ease-out,transform 140ms ease-out}.ds-action:hover{background:#e3f77c}.ds-action:active{transform:scale(.97)}.ds-action:focus-visible{outline:3px solid #236955;outline-offset:4px}"
+    },
+    {
+      "name": "Selected Service Filter",
+      "kind": "chip",
+      "refersTo": "filter-selected",
+      "description": "Current catalog filter; selection is clear in both themes.",
+      "html": "<button class=\"ds-filter\" aria-pressed=\"true\">Agua y desagüe</button>",
+      "css": ".ds-filter{min-height:43px;padding:10px 16px;border:1px solid #d4f542;border-radius:999px;background:#d4f542;color:#172117;font:700 12px 'DM Sans',sans-serif}.ds-filter:focus-visible{outline:3px solid #236955;outline-offset:3px}"
+    },
+    {
+      "name": "Service Chapter",
+      "kind": "custom",
+      "refersTo": "service-scene",
+      "description": "Photo-led service section with a label and readable copy.",
+      "html": "<article class=\"ds-service\"><img src=\"https://images.unsplash.com/photo-1646009445351-b8192e095f3a?auto=format&fit=crop&w=900&q=85\" alt=\"Imagen ilustrativa de tuberías de agua\"><p class=\"ds-caption\">Imagen ilustrativa</p></article>",
+      "css": ".ds-service{position:relative;overflow:hidden;background:#183b32}.ds-service img{display:block;width:100%;height:100%;object-fit:cover}.ds-caption{position:absolute;left:16px;bottom:12px;margin:0;color:#f8f9f4;font:700 12px 'DM Sans',sans-serif;letter-spacing:.12em;text-transform:uppercase}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Un edificio en movimiento",
+    "overview": "The site presents general services as a guided walk through a working space. Trade photography, large condensed headlines and clear action points help visitors understand the work without treating the page like an ecommerce dashboard.",
+    "keyCharacteristics": [
+      "Vertical, image-led service chapters",
+      "Mineral light surfaces and evergreen dark surfaces",
+      "One high-visibility lime accent",
+      "Locally served condensed display and sans-serif body fonts",
+      "Scroll-linked image motion with reduced-motion support"
+    ],
+    "rules": [
+      { "name": "The One Signal Rule", "body": "Reserve lime for a decisive action, a title emphasis or a small wayfinding cue.", "section": "colors" },
+      { "name": "The Honest Work Rule", "body": "Label stock photography as illustrative and do not present it as company work.", "section": "colors" },
+      { "name": "The Two-Voice Rule", "body": "Use Barlow Condensed for large headlines and DM Sans for body, navigation and controls.", "section": "typography" }
+    ],
+    "dos": [
+      "Do keep service scenes full-width or editorially split rather than placing them in generic cards.",
+      "Do preserve existing auth, cart, filter, API and theme DOM contracts when editing the page.",
+      "Do honor prefers-reduced-motion and keep text visible without animation."
+    ],
+    "donts": [
+      "Don't claim unverified services, credentials, testimonials, prices, response times or warranties.",
+      "Don't turn the service story into an ecommerce dashboard or uniform feature-card grid.",
+      "Don't use persistent auto-scrolling copy or gradients in text."
+    ]
+  }
+}

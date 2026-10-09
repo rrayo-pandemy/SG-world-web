@@ -8,15 +8,32 @@ class AnimationManager {
             threshold: 0.1,
             rootMargin: '0px 0px -50px 0px'
         };
+        this.motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+        const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        this.saveData = Boolean(connection && (connection.saveData || /^(slow-2g|2g)$/.test(connection.effectiveType || '')));
+        if (this.saveData) document.documentElement.setAttribute('data-save-data', 'true');
         this.setupIntersectionObserver();
     }
 
     setupIntersectionObserver() {
+        const worldElements = document.querySelectorAll('.world-reveal');
+        const showWithoutMotion = this.motionPreference.matches || this.saveData;
+
+        if (showWithoutMotion) {
+            worldElements.forEach((element) => element.classList.add('is-revealed'));
+        } else if ('IntersectionObserver' in window) {
+            worldElements.forEach((element) => element.classList.add('world-reveal--pending'));
+        }
+
         if (!('IntersectionObserver' in window)) {
             // Fallback for older browsers
             document.querySelectorAll('.scroll-reveal').forEach(el => {
                 el.style.opacity = '1';
                 el.style.transform = 'translateY(0)';
+            });
+            worldElements.forEach((element) => {
+                element.classList.remove('world-reveal--pending');
+                element.classList.add('is-revealed');
             });
             return;
         }
@@ -24,45 +41,54 @@ class AnimationManager {
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
+                    if (entry.target.classList.contains('world-reveal')) {
+                        entry.target.classList.remove('world-reveal--pending');
+                        entry.target.classList.add('is-revealed');
+                    } else {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
                     // Unobserve after revealing
                     observer.unobserve(entry.target);
                 }
             });
         }, this.observerOptions);
 
-        document.querySelectorAll('.scroll-reveal').forEach(el => {
-            observer.observe(el);
-        });
-    }
-
-    // Parallax effect on scroll (subtle)
-    setupParallax() {
-        const parallaxElements = document.querySelectorAll('[data-parallax]');
-        if (parallaxElements.length === 0) return;
-
-        window.addEventListener('scroll', () => {
-            const scrollY = window.scrollY;
-            parallaxElements.forEach(el => {
-                const speed = el.dataset.parallax || 0.5;
-                el.style.transform = `translateY(${scrollY * speed}px)`;
-            });
-        }, { passive: true });
-    }
-
-    // Fade in animations on load
-    setupInitialAnimations() {
-        const fadeElements = document.querySelectorAll('.fade-in-up, .fade-in-right');
-        fadeElements.forEach((el, index) => {
-            el.style.animationDelay = (index * 0.1) + 's';
+        document.querySelectorAll('.scroll-reveal, .world-reveal').forEach((element) => {
+            if (showWithoutMotion) {
+                if (element.classList.contains('scroll-reveal')) {
+                    element.style.opacity = '1';
+                    element.style.transform = 'translateY(0)';
+                }
+                return;
+            }
+            observer.observe(element);
         });
     }
 
     // Initialize all animations
     init() {
-        this.setupInitialAnimations();
-        this.setupParallax();
+        this.setupIdleMotion();
+    }
+
+    setupIdleMotion() {
+        const loops = document.querySelectorAll('[data-idle-motion]');
+        if (!loops.length || this.motionPreference.matches || this.saveData) return;
+        if (!('IntersectionObserver' in window)) return;
+
+        const syncVisibility = () => {
+            document.documentElement.dataset.pageHidden = document.hidden ? 'true' : 'false';
+        };
+        syncVisibility();
+        document.addEventListener('visibilitychange', syncVisibility);
+
+        const loopObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                entry.target.classList.toggle('is-motion-active', entry.isIntersecting);
+            });
+        }, { threshold: 0.01, rootMargin: '80px 0px' });
+
+        loops.forEach((element) => loopObserver.observe(element));
     }
 }
 
@@ -86,7 +112,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         
         if (target) {
             target.scrollIntoView({
-                behavior: 'smooth',
+                behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
                 block: 'start'
             });
             
