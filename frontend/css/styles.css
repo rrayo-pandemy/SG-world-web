@@ -189,7 +189,7 @@ p {
 a {
     color: var(--color-primary);
     text-decoration: none;
-    transition: color var(--transition-normal);
+    transition: none;
 }
 
 a:hover {
@@ -231,7 +231,7 @@ svg {
     font-size: var(--font-size-base);
     font-weight: 600;
     border-radius: var(--radius-md);
-    transition: all var(--transition-normal);
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1), opacity 180ms cubic-bezier(0.23, 1, 0.32, 1);
     cursor: pointer;
     border: 2px solid transparent;
     white-space: nowrap;
@@ -277,7 +277,7 @@ svg {
 
 .btn__arrow {
     display: inline-block;
-    transition: transform var(--transition-normal);
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .btn:hover .btn__arrow {
@@ -297,30 +297,14 @@ svg {
     background: var(--color-bg);
     border-bottom: 1px solid var(--color-border-light);
     box-shadow: none;
-    transition: 
-        top 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-        margin 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-        width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-        border-radius 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-        background 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-        box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-        backdrop-filter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: none;
 }
 
 .header.header--scrolled {
-    top: 12px;
-    margin: 0 20px;
-    width: calc(100% - 40px);
     background: rgba(255, 255, 255, 0.72);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    border-radius: var(--radius-xl);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-}
-
-.header.header--scrolled .header__container {
-    padding: var(--spacing-xs) var(--spacing-md);
 }
 
 .header__container {
@@ -381,7 +365,7 @@ svg {
     line-height: 1.1;
     white-space: nowrap;
     text-decoration: none;
-    transition: color var(--transition-normal);
+    transition: none;
 }
 
 .nav__link:visited {
@@ -398,14 +382,16 @@ svg {
     position: absolute;
     bottom: 0;
     left: 0;
-    width: 0;
+    width: 100%;
     height: 2px;
     background: var(--gradient-primary);
-    transition: width var(--transition-normal);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .nav__link:hover::after {
-    width: 100%;
+    transform: scaleX(1);
 }
 
 .nav__item {
@@ -437,7 +423,7 @@ svg {
     opacity: 0;
     pointer-events: none;
     transform: translateY(6px);
-    transition: all var(--transition-normal);
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1), opacity 180ms cubic-bezier(0.23, 1, 0.32, 1);
     z-index: var(--z-dropdown);
 }
 
@@ -537,7 +523,7 @@ svg {
     color: var(--color-text);
     font-size: var(--font-size-xs);
     font-weight: 700;
-    transition: all var(--transition-normal);
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1), opacity 180ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .header-account__logout:hover {
@@ -556,7 +542,7 @@ svg {
     border: 1px solid var(--color-border);
     background: var(--color-input-bg);
     color: var(--color-primary);
-    transition: all var(--transition-normal);
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1), opacity 180ms cubic-bezier(0.23, 1, 0.32, 1);
     font-size: 18px;
     font-weight: 700;
 }
@@ -590,7 +576,7 @@ svg {
     justify-content: center;
     border-radius: var(--radius-md);
     background: var(--color-bg-secondary);
-    transition: all var(--transition-normal);
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1), opacity 180ms cubic-bezier(0.23, 1, 0.32, 1);
     color: var(--color-text);
 }
 
@@ -645,7 +631,7 @@ svg {
     color: var(--color-text);
     padding: 0;
     cursor: pointer;
-    transition: all var(--transition-normal);
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1), opacity 180ms cubic-bezier(0.23, 1, 0.32, 1);
     z-index: calc(var(--z-sticky) + 1);
 }
 
@@ -659,7 +645,7 @@ svg {
     height: 2px;
     background: currentColor;
     border-radius: 2px;
-    transition: all var(--transition-normal);
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1), opacity 180ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 /* ============================================
@@ -680,7 +666,7 @@ svg {
     display: flex;
     flex-direction: column;
     transform: translateX(100%);
-    transition: transform var(--transition-normal);
+    transition: transform 240ms cubic-bezier(0.32, 0.72, 0, 1);
     box-shadow: var(--shadow-glass);
     border-left: 1px solid var(--color-border);
     overflow: hidden;
@@ -712,7 +698,7 @@ svg {
     justify-content: center;
     background: var(--color-bg-secondary);
     border-radius: var(--radius-md);
-    transition: background var(--transition-normal);
+    transition: none;
 }
 
 .cart-close:hover {
@@ -1281,7 +1267,7 @@ svg {
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    transition: all var(--transition-normal);
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1), opacity 180ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .hero__social-btn:hover {
@@ -1390,7 +1376,7 @@ svg {
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
-    transition: all var(--transition-normal);
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1), opacity 180ms cubic-bezier(0.23, 1, 0.32, 1);
     position: relative;
     overflow: hidden;
 }
@@ -1468,7 +1454,7 @@ svg {
     background: linear-gradient(155deg, rgba(255, 255, 255, 0.94) 0%, rgba(250, 246, 238, 0.86) 100%);
     box-shadow: 0 12px 28px rgba(19, 33, 45, 0.12);
     backdrop-filter: blur(10px);
-    transition: transform var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal);
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .promo-card::before {
@@ -1595,14 +1581,6 @@ svg {
             rgba(56, 212, 155, 0.9),
             rgba(23, 120, 100, 0.85),
             rgba(5, 15, 15, 1));
-    background-size: 200% auto;
-    animation: shine 4s linear infinite;
-}
-
-@keyframes shine {
-    to {
-        background-position: 200% center;
-    }
 }
 
 .premium-points {
@@ -1723,7 +1701,7 @@ svg {
     background: var(--color-bg-secondary);
     color: var(--color-text-light);
     border: 1px solid var(--color-border);
-    transition: all var(--transition-normal);
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1), opacity 180ms cubic-bezier(0.23, 1, 0.32, 1);
     cursor: pointer;
 }
 
@@ -1764,7 +1742,7 @@ svg {
     background: var(--color-bg-secondary);
     border-radius: var(--radius-lg);
     overflow: hidden;
-    transition: all var(--transition-normal);
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1), opacity 180ms cubic-bezier(0.23, 1, 0.32, 1);
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--color-border-light);
     display: flex;
@@ -1820,8 +1798,6 @@ svg {
     position: absolute;
     top: var(--spacing-md);
     right: var(--spacing-md);
-    background-size: 200% auto;
-    animation: shine 3s linear infinite;
     box-shadow: 0 0 10px rgba(241, 243, 243, 0.25);
     border: 1px solid rgba(241, 243, 243, 0.25);
     color: white;
@@ -1843,8 +1819,6 @@ svg {
             rgba(56, 212, 155, 0.9),
             rgba(23, 120, 100, 0.85),
             rgba(5, 15, 15, 1));
-    background-size: 200% auto;
-    animation: shine 3s linear infinite;
     box-shadow: 0 0 10px rgba(241, 243, 243, 0.25);
     border: 1px solid rgba(241, 243, 243, 0.25);
     color: white;
@@ -1866,8 +1840,6 @@ svg {
             rgba(160, 90, 255, 0.9),
             rgba(160, 90, 255, 0.9),
             rgba(66, 38, 121));
-    background-size: 200% auto;
-    animation: shine 3s linear infinite;
     box-shadow: 0 0 10px rgba(241, 243, 243, 0.25);
     border: 1px solid rgba(241, 243, 243, 0.25);
     color: white;
@@ -1888,8 +1860,6 @@ svg {
             rgba(200, 140, 40, 0.9),
             rgba(200, 140, 40, 0.9),
             rgba(10, 0, 0, 1));
-    background-size: 200% auto;
-    animation: shine 3s linear infinite;
     box-shadow: 0 0 10px rgba(241, 243, 243, 0.25);
     border: 1px solid rgba(241, 243, 243, 0.25);
     color: white;
@@ -1957,7 +1927,7 @@ svg {
     border-radius: var(--radius-md);
     font-weight: 600;
     cursor: pointer;
-    transition: all var(--transition-normal);
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1), opacity 180ms cubic-bezier(0.23, 1, 0.32, 1);
     box-shadow: var(--shadow-md);
     white-space: nowrap;
     min-width: 120px;
@@ -1985,7 +1955,7 @@ svg {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1), opacity 180ms cubic-bezier(0.23, 1, 0.32, 1);
     color: var(--color-text-light);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2), inset 0 0 0 1px rgba(255, 255, 255, 0.3);
     position: relative;
@@ -1996,18 +1966,19 @@ svg {
     content: '';
     position: absolute;
     top: 0;
-    left: -100%;
+    left: 0;
     width: 100%;
     height: 100%;
     background: linear-gradient(90deg,
             transparent,
             rgba(136, 199, 224, 0.932),
             transparent);
-    transition: 0.5s;
+    transform: translate3d(-100%, 0, 0);
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .btn-wishlist:hover::before {
-    left: 100%;
+    transform: translate3d(100%, 0, 0);
 }
 
 .btn-wishlist:hover {
@@ -2039,34 +2010,12 @@ svg {
 }
 
 .heart {
-    transition: transform 0.25s ease;
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .btn-wishlist.active .heart {
-    animation: heartBeat 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform: scale(1.15);
     display: inline-block;
-}
-
-@keyframes heartBeat {
-    0% {
-        transform: scale(1);
-    }
-
-    25% {
-        transform: scale(1.4);
-    }
-
-    50% {
-        transform: scale(1.2);
-    }
-
-    75% {
-        transform: scale(1.3);
-    }
-
-    100% {
-        transform: scale(1.2);
-    }
 }
 
 .btn-wishlist:hover {
@@ -2097,7 +2046,7 @@ svg {
     border-radius: var(--radius-lg);
     border: 1px solid rgba(255, 255, 255, 0.72);
     text-align: center;
-    transition: all var(--transition-normal);
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1), opacity 180ms cubic-bezier(0.23, 1, 0.32, 1);
     box-shadow: 0 10px 22px rgba(17, 39, 58, 0.11);
     backdrop-filter: blur(8px);
 }
@@ -2151,7 +2100,7 @@ svg {
     background: linear-gradient(160deg, rgba(255, 255, 255, 0.97) 0%, rgba(248, 243, 234, 0.9) 100%);
     border: 1px solid rgba(255, 255, 255, 0.68);
     border-radius: var(--radius-lg);
-    transition: all var(--transition-normal);
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1), opacity 180ms cubic-bezier(0.23, 1, 0.32, 1);
     text-decoration: none;
     color: var(--color-text);
     box-shadow: 0 10px 22px rgba(14, 37, 55, 0.11);
@@ -2295,7 +2244,7 @@ svg {
 .footer-section a,
 .footer-section a:visited {
     color: var(--color-neutral-300) !important;
-    transition: color var(--transition-normal);
+    transition: none;
 }
 
 .footer-section a:hover {
@@ -2316,7 +2265,7 @@ svg {
     height: 40px;
     background: rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-md);
-    transition: all var(--transition-normal);
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1), opacity 180ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .social-links a:hover {
@@ -2358,17 +2307,15 @@ svg {
    ============================================ */
 
 .scroll-reveal {
-    opacity: 0;
-    transform: translateY(14px);
-    animation: revealer 560ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    animation-delay: var(--reveal-delay, 0s);
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    transition: opacity 480ms cubic-bezier(0.16, 1, 0.3, 1) var(--reveal-delay, 0ms),
+        transform 480ms cubic-bezier(0.16, 1, 0.3, 1) var(--reveal-delay, 0ms);
 }
 
-@keyframes revealer {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.scroll-reveal--pending {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
 }
 
 /* ============================================
@@ -2808,7 +2755,7 @@ svg {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all var(--transition-normal);
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1), opacity 180ms cubic-bezier(0.23, 1, 0.32, 1);
     z-index: 10;
     padding: 0;
     line-height: 0;
@@ -2842,7 +2789,7 @@ svg {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all var(--transition-normal);
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1), opacity 180ms cubic-bezier(0.23, 1, 0.32, 1);
     z-index: 10;
     padding: 0;
     backdrop-filter: blur(8px);

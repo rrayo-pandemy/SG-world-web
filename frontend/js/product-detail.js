@@ -202,8 +202,18 @@ class ProductDetailManager {
 
         document.title = `${this.currentProduct.name} - Ganesh`;
         document.getElementById('breadcrumb-product').textContent = this.currentProduct.name;
-        document.getElementById('main-image').src = this.currentProduct.image;
-        document.getElementById('thumb-0').src = this.currentProduct.image;
+        const mainImage = document.getElementById('main-image');
+        mainImage.src = this.currentProduct.image;
+        mainImage.alt = `Imagen de ${this.currentProduct.name}`;
+        mainImage.loading = 'eager';
+        mainImage.fetchPriority = 'high';
+        mainImage.decoding = 'async';
+
+        const thumbnail = document.getElementById('thumb-0');
+        thumbnail.src = this.currentProduct.image;
+        thumbnail.alt = `Miniatura de ${this.currentProduct.name}`;
+        thumbnail.loading = 'lazy';
+        thumbnail.decoding = 'async';
         document.getElementById('product-name').textContent = this.currentProduct.name;
         document.getElementById('product-price').textContent = `S/. ${Number(this.currentProduct.price || 0).toFixed(2)}`;
 
@@ -499,7 +509,7 @@ class ProductDetailManager {
             .map((product) => `
                 <a href="product-detail.html?id=${product.id}" class="product-card scroll-reveal" style="text-decoration: none; color: inherit;">
                     <div class="product-image">
-                        <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}" loading="lazy">
+                    <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}" loading="lazy" decoding="async">
                     </div>
                     <div class="product-content">
                         <h3 class="product-name">${escapeHtml(product.name)}</h3>

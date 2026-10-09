@@ -147,7 +147,7 @@ body {
     border-radius: 50%;
     object-fit: cover;
     border: 3px solid var(--avatar-border);
-    transition: border-color 0.3s ease, transform 0.3s ease;
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
     background: var(--surface-soft);
 }
 
@@ -174,7 +174,7 @@ body {
     z-index: 10;
     cursor: pointer;
     padding: 0;
-    transition: all 0.2s ease;
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1), opacity 180ms cubic-bezier(0.23, 1, 0.32, 1);
     outline: none;
     -webkit-tap-highlight-color: transparent;
 }
@@ -221,7 +221,7 @@ body {
     justify-content: center;
     cursor: pointer;
     font-size: 0.8rem;
-    transition: all 0.2s ease;
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1), opacity 180ms cubic-bezier(0.23, 1, 0.32, 1);
     backdrop-filter: blur(2px);
     padding: 0;
 }
@@ -268,7 +268,7 @@ body {
     font-size: 0.9rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1), opacity 180ms cubic-bezier(0.23, 1, 0.32, 1);
     margin-bottom: 0.15rem;
     border: none;
     background: none;
@@ -348,7 +348,7 @@ body {
     padding: 1.5rem;
     box-shadow: var(--shadow-sm);
     margin-bottom: 1.2rem;
-    transition: box-shadow 0.3s ease;
+    transition: none;
 }
 
 .profile-card:hover {
@@ -404,7 +404,7 @@ body {
     color: var(--text);
     font: inherit;
     font-size: 0.92rem;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition: none;
 }
 
 .form-input:focus {
@@ -433,7 +433,7 @@ body {
     font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1), opacity 180ms cubic-bezier(0.23, 1, 0.32, 1);
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
@@ -480,7 +480,7 @@ body {
     border: 1px solid var(--line);
     border-radius: 14px;
     overflow: hidden;
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .product-mini-card:hover {
@@ -605,7 +605,7 @@ body {
     border-radius: 10px;
     opacity: 0;
     transform: translateY(8px);
-    transition: all 0.2s ease;
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1), opacity 180ms cubic-bezier(0.23, 1, 0.32, 1);
     z-index: 9999;
     font-size: 0.88rem;
 }
@@ -630,7 +630,7 @@ body {
     cursor: pointer;
     font-size: 16px;
     font-weight: 700;
-    transition: border-color 0.2s ease, color 0.2s ease;
+    transition: none;
 }
 
 .theme-toggle:hover {
@@ -768,7 +768,7 @@ body {
     font-size: 24px;
     line-height: 1;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1), opacity 180ms cubic-bezier(0.23, 1, 0.32, 1);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -813,7 +813,7 @@ body {
     border-radius: 20px 20px 0 0;
     padding: 1rem 1rem 2rem;
     transform: translateY(100%);
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
     display: flex;
     flex-direction: column;
 }
@@ -855,7 +855,7 @@ body {
     font-size: 0.95rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: none;
     text-align: left;
 }
 
@@ -890,5 +890,16 @@ body {
 
     to {
         opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
     }
 }

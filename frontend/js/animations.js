@@ -21,15 +21,13 @@ class AnimationManager {
 
         if (showWithoutMotion) {
             worldElements.forEach((element) => element.classList.add('is-revealed'));
-        } else if ('IntersectionObserver' in window) {
-            worldElements.forEach((element) => element.classList.add('world-reveal--pending'));
         }
 
         if (!('IntersectionObserver' in window)) {
             // Fallback for older browsers
             document.querySelectorAll('.scroll-reveal').forEach(el => {
                 el.style.opacity = '1';
-                el.style.transform = 'translateY(0)';
+                el.style.transform = 'translate3d(0, 0, 0)';
             });
             worldElements.forEach((element) => {
                 element.classList.remove('world-reveal--pending');
@@ -45,11 +43,17 @@ class AnimationManager {
                         entry.target.classList.remove('world-reveal--pending');
                         entry.target.classList.add('is-revealed');
                     } else {
+                        entry.target.classList.remove('scroll-reveal--pending');
                         entry.target.style.opacity = '1';
-                        entry.target.style.transform = 'translateY(0)';
+                        entry.target.style.transform = 'translate3d(0, 0, 0)';
                     }
                     // Unobserve after revealing
                     observer.unobserve(entry.target);
+                } else if (entry.target.classList.contains('world-reveal')) {
+                    // Keep visible content intact when this file is loaded on demand.
+                    entry.target.classList.add('world-reveal--pending');
+                } else if (entry.target.classList.contains('scroll-reveal')) {
+                    entry.target.classList.add('scroll-reveal--pending');
                 }
             });
         }, this.observerOptions);
@@ -58,7 +62,7 @@ class AnimationManager {
             if (showWithoutMotion) {
                 if (element.classList.contains('scroll-reveal')) {
                     element.style.opacity = '1';
-                    element.style.transform = 'translateY(0)';
+                    element.style.transform = 'translate3d(0, 0, 0)';
                 }
                 return;
             }
@@ -68,7 +72,61 @@ class AnimationManager {
 
     // Initialize all animations
     init() {
+        this.setupLazyVideos();
         this.setupIdleMotion();
+    }
+
+    setupLazyVideos() {
+        document.addEventListener('click', (event) => {
+            if (!(event.target instanceof Element)) return;
+            const preview = event.target.closest('[data-lazy-video]');
+            if (!preview || !preview.dataset.videoSrc) return;
+
+            const stage = preview.closest('.world-video__stage');
+            if (!stage || stage.querySelector('[data-lazy-video-player]')) return;
+
+            const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+            const slowNetwork = Boolean(connection && (
+                connection.saveData ||
+                /^(slow-2g|2g)$/.test(connection.effectiveType || '') ||
+                (Number(connection.downlink) > 0 && Number(connection.downlink) < 1.2)
+            ));
+            if (slowNetwork) return; // Keep the poster and let the link open Pexels' static page.
+
+            event.preventDefault();
+
+            const video = document.createElement('video');
+            video.className = 'world-video__player';
+            video.controls = true;
+            video.playsInline = true;
+            video.preload = 'none';
+            video.setAttribute('aria-label', preview.dataset.videoLabel || 'Video ilustrativo');
+            video.dataset.lazyVideoPlayer = 'true';
+
+            if (preview.dataset.videoPoster) video.poster = preview.dataset.videoPoster;
+
+            const source = document.createElement('source');
+            source.src = preview.dataset.videoSrc;
+            source.type = 'video/mp4';
+            video.append(source);
+
+            const restorePreview = () => {
+                video.remove();
+                preview.classList.remove('is-hidden');
+                preview.removeAttribute('aria-hidden');
+            };
+
+            video.addEventListener('error', restorePreview, { once: true });
+            preview.classList.add('is-hidden');
+            preview.setAttribute('aria-hidden', 'true');
+            stage.append(video);
+            video.load();
+
+            const playRequest = video.play();
+            if (playRequest && typeof playRequest.catch === 'function') {
+                playRequest.catch(() => video.focus());
+            }
+        });
     }
 
     setupIdleMotion() {
@@ -92,11 +150,17 @@ class AnimationManager {
     }
 }
 
-// Initialize animations when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
+// The entry script is loaded near the first reveal target, which may be after DOMContentLoaded.
+function initializeAnimations() {
     const animationManager = new AnimationManager();
     animationManager.init();
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeAnimations, { once: true });
+} else {
+    initializeAnimations();
+}
 
 /* ============================================
    SMOOTH SCROLL BEHAVIOR
@@ -158,3 +222,8 @@ function formatCurrency(value) {
 function log(message, type = 'info') {
     console.log(`[${new Date().toLocaleTimeString()}] ${type.toUpperCase()}: ${message}`);
 }
+
+// Keep the legacy storefront helpers available to classic scripts.
+window.debounce = debounce;
+window.formatCurrency = formatCurrency;
+window.log = log;

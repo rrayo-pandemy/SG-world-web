@@ -505,6 +505,8 @@ class ShoppingCart {
                 // Use an <img> to avoid CSS url injection
                 const img = document.createElement('img');
                 img.alt = item.name || '';
+                img.loading = 'lazy';
+                img.decoding = 'async';
                 img.src = (item.image && (String(item.image).startsWith('http') || String(item.image).startsWith('/'))) ? item.image : 'https://via.placeholder.com/80x80?text=Img';
                 img.style.width = '80px';
                 img.style.height = '80px';

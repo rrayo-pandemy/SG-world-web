@@ -283,6 +283,7 @@ class ProductManager {
       }
       const img = document.createElement('img');
       img.loading = 'lazy';
+      img.decoding = 'async';
       img.alt = String(product.name || '');
       img.src = validateImageUrl(product.image);
       imgWrap.appendChild(img);

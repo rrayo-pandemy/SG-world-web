@@ -400,6 +400,7 @@ async function loadFavorites() {
         const img = document.createElement('img');
         img.className = 'product-mini-card__img';
         img.loading = 'lazy';
+        img.decoding = 'async';
         img.alt = p.name || '';
         img.src = p.image && (p.image.startsWith('http') || p.image.startsWith('/')) ? p.image : 'https://via.placeholder.com/80x80?text=Img';
 
@@ -468,7 +469,7 @@ async function loadRecommendations() {
     if (empty) empty.style.display = 'none';
     grid.innerHTML = products.map((p) => `
       <div class="product-mini-card">
-        <img class="product-mini-card__img" src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" loading="lazy">
+        <img class="product-mini-card__img" src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" loading="lazy" decoding="async">
         <div class="product-mini-card__body">
           <div class="product-mini-card__name">${escapeHtml(p.name)}</div>
           <div class="product-mini-card__price">S/ ${Number(p.price).toFixed(2)}</div>
