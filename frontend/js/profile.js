@@ -4,6 +4,10 @@
 
 const API_BASE = window.API_BASE || '';
 
+function isDefaultAvatar(source) {
+  return !source || source.includes("ui-avatars.com") || source.includes("avatar-placeholder.svg");
+}
+
 function escapeHtml(value) {
   return String(value)
     .replaceAll('&', '&amp;')
@@ -13,6 +17,10 @@ function escapeHtml(value) {
 }
 
 async function api(path, options = {}) {
+  if (window.location.protocol === 'file:') {
+    throw new Error('Abre el perfil desde http://localhost:8000/profile.html. La página no puede conectarse a la API cuando se abre como archivo.');
+  }
+
   const headers = { ...(options.headers || {}) };
 
   // Don't set Content-Type for FormData (file upload)
@@ -31,9 +39,21 @@ async function api(path, options = {}) {
     return;
   }
 
-  const data = await response.json();
+  const responseText = await response.text();
+  let data;
+
+  try {
+    data = responseText ? JSON.parse(responseText) : {};
+  } catch (_error) {
+    const detail = responseText.trim().slice(0, 180);
+    if (!response.ok) {
+      throw new Error(`El servidor rechazó la solicitud (${response.status})${detail ? `: ${detail}` : ''}`);
+    }
+    throw new Error('El servidor devolvió una respuesta que no es JSON. Revisa la dirección configurada para la API.');
+  }
+
   if (!response.ok) {
-    throw new Error(data.message || 'Error del servidor');
+    throw new Error(data.message || `Error del servidor (${response.status})`);
   }
   return data;
 }
@@ -107,7 +127,7 @@ async function loadProfile() {
       avatarImg.src = user.avatar_url.startsWith('http') ? user.avatar_url : `${API_BASE}${user.avatar_url}`;
     } else {
       // Default avatar with user initial
-      avatarImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'U')}&background=0f6f7f&color=fff&size=128`;
+      avatarImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'U')}&background=236955&color=fff&size=128`;
     }
   } catch (error) {
     notify(error.message, true);
@@ -246,7 +266,8 @@ function bindAvatarUpload() {
   if (btnView && avatarImg && photoModal && photoModalImg) {
     btnView.addEventListener('click', () => {
       // Solo abrimos si no es la foto por defecto
-      if (avatarImg.src && !avatarImg.src.includes('ui-avatars.com')) {
+      const avatarSource = avatarImg.getAttribute("src") || "";
+      if (!isDefaultAvatar(avatarSource)) {
         photoModalImg.src = avatarImg.src;
         photoModal.classList.add('active');
       } else {
@@ -257,7 +278,8 @@ function bindAvatarUpload() {
 
   if (btnDelete && avatarImg) {
     btnDelete.addEventListener('click', async () => {
-      if (avatarImg.src.includes('ui-avatars.com')) {
+      const avatarSource = avatarImg.getAttribute("src") || "";
+      if (isDefaultAvatar(avatarSource)) {
         notify('No tienes una foto personalizada para eliminar');
         return;
       }
@@ -271,7 +293,7 @@ function bindAvatarUpload() {
 
         if (data.success) {
           const userName = document.getElementById('profile-name').value || 'U';
-          avatarImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=0f6f7f&color=fff&size=128`;
+          avatarImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=236955&color=fff&size=128`;
           notify('Foto de perfil eliminada');
         }
       } catch (error) {
@@ -475,7 +497,7 @@ async function loadRecommendations() {
           <div class="product-mini-card__price">S/ ${Number(p.price).toFixed(2)}</div>
           <div class="product-mini-card__actions">
             <a href="product-detail.html?id=${p.id}" class="btn btn--secondary">Ver</a>
-            <button class="btn btn--primary" onclick="addFavoriteFromRec(${p.id})">♡ Favorito</button>
+            <button class="btn btn--primary" onclick="addFavoriteFromRec(${p.id})">Guardar en favoritos</button>
           </div>
         </div>
       </div>

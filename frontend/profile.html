@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Mi perfil - Ganesh">
-    <meta name="theme-color" content="#0b3c5d">
+    <meta name="description" content="Administra tu perfil y tus preferencias de cuenta.">
+    <meta name="theme-color" content="#183b32">
     <script src="runtime-config.js"></script>
     <script>
         (function () {
@@ -17,55 +17,46 @@
             } catch (e) { }
         })();
     </script>
-    <title>Mi Perfil - Ganesh</title>
-    <link rel="stylesheet" href="css/profile.css?v=20260504">
+    <title>Mi perfil | Empresa de Servicios Generales</title>
+    <link rel="stylesheet" href="css/profile.css?v=20261009">
 </head>
 
-<body>
+<body class="profile-page">
     <!-- Top Bar -->
     <header class="profile-topbar">
-        <a href="index.html" class="profile-topbar__brand">
-            <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true">
-                <circle cx="16" cy="16" r="14" fill="url(#pg)" opacity="0.9" />
-                <path d="M16 6 L22 14 L22 26 L10 26 L10 14 Z" fill="none" stroke="currentColor" stroke-width="1.5" />
-                <defs>
-                    <linearGradient id="pg" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:#00d4ff" />
-                        <stop offset="100%" style="stop-color:#0099cc" />
-                    </linearGradient>
-                </defs>
-            </svg>
-            Ganesh
+        <a href="index.html" class="profile-topbar__brand" aria-label="Empresa de Servicios Generales, inicio">
+            <span class="service-mark" aria-hidden="true">SG</span>
+            <span>Empresa de<br>Servicios Generales</span>
         </a>
         <div class="profile-topbar__actions">
-            <button class="theme-toggle" aria-label="Cambiar tema" data-theme-glyph="☾" type="button">
+            <button class="theme-toggle" aria-label="Cambiar tema" data-theme-glyph="&#9790;" type="button">
                 <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
                     <path d="M21 12.79A9 9 0 0111.21 3c0 .34.02.67.05 1A7 7 0 1019 19.74c.33.03.66.05 1 .05z"
                         fill="currentColor" />
                 </svg>
             </button>
-            <a href="index.html" class="btn btn--back">← Volver a la tienda</a>
+            <a href="index.html" class="btn btn--back">← Volver al sitio</a>
         </div>
     </header>
 
     <!-- Main Layout -->
     <div class="profile-layout">
         <!-- Sidebar -->
-        <aside class="profile-sidebar">
+        <aside class="profile-sidebar" aria-label="Panel de cuenta">
             <div class="profile-sidebar__avatar">
                 <div class="avatar-wrapper" id="avatar-wrapper">
-                    <img class="avatar-img" id="avatar-img" src="" alt="Avatar" decoding="async">
-                    <button type="button" class="avatar-badge" id="avatar-badge" title="Editar foto">
+                    <img class="avatar-img" id="avatar-img" src="assets/avatar-placeholder.svg" alt="Foto de perfil" decoding="async">
+                    <button type="button" class="avatar-badge" id="avatar-badge" title="Editar foto" aria-label="Editar foto de perfil">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
                             <path d="M12 15.5c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3z"/>
                             <path d="M21 6h-3.17L16 4h-8L6.17 6H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-9 13c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/>
                         </svg>
                     </button>
                     <div class="avatar-overlay">
-                        <button type="button" class="avatar-btn" id="btn-view-avatar" title="Ver foto">👁</button>
-                        <button type="button" class="avatar-btn" id="btn-change-avatar" title="Cambiar foto">📷</button>
+                        <button type="button" class="avatar-btn" id="btn-view-avatar" title="Ver foto" aria-label="Ver foto de perfil"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="2.5"/></svg></button>
+                        <button type="button" class="avatar-btn" id="btn-change-avatar" title="Cambiar foto" aria-label="Cambiar foto de perfil"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h3l1.5-2h7L17 7h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
                         <button type="button" class="avatar-btn" id="btn-delete-avatar"
-                            title="Eliminar foto">🗑</button>
+                            title="Eliminar foto" aria-label="Eliminar foto de perfil"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m4 4v5m4-5v5"/></svg></button>
                     </div>
                     <input type="file" class="avatar-input" id="avatar-input"
                         accept="image/jpeg,image/png,image/gif,image/webp">
@@ -74,7 +65,7 @@
                 <span class="sidebar-email" id="sidebar-email">email@ejemplo.com</span>
             </div>
 
-            <ul class="profile-nav">
+            <nav class="profile-sidebar__nav" aria-label="Secciones de la cuenta"><ul class="profile-nav">
                 <li><button class="profile-nav__item active" data-section="profile">
                         <svg viewBox="0 0 24 24">
                             <path
@@ -87,7 +78,7 @@
                             <path
                                 d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" />
                         </svg>
-                        Cambiar Contrasena
+                        Cambiar contrase&ntilde;a
                     </button></li>
                 <li class="nav-divider"></li>
                 <li><button class="profile-nav__item" data-section="favorites">
@@ -112,8 +103,7 @@
                         </svg>
                         Historial de Compras
                     </button></li>
-            </ul>
-        </aside>
+            </ul></nav></aside>
 
         <!-- Main Content -->
         <main class="profile-main">
@@ -121,7 +111,7 @@
             <!-- Section: Profile -->
             <div class="profile-section active" id="section-profile">
                 <h1 class="section-title">Mi Perfil</h1>
-                <p class="section-subtitle">Actualiza tu informacion personal</p>
+                <p class="section-subtitle">Consulta y actualiza tu informaci&oacute;n personal</p>
 
                 <form class="profile-card" id="profile-form">
                     <div class="profile-card__title">
@@ -141,22 +131,22 @@
                             <input class="form-input" type="text" id="profile-lastname">
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="profile-nickname">Nickname</label>
-                            <input class="form-input" type="text" id="profile-nickname" placeholder="Nickname">
+                            <label class="form-label" for="profile-nickname">Nombre de perfil</label>
+                            <input class="form-input" type="text" id="profile-nickname" placeholder="Nombre de perfil">
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="profile-email">Correo Electronico</label>
+                            <label class="form-label" for="profile-email">Correo electr&oacute;nico</label>
                             <input class="form-input" type="email" id="profile-email" readonly>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="profile-phone">Numero Celular</label>
+                            <label class="form-label" for="profile-phone">N&uacute;mero celular</label>
                             <input class="form-input" type="tel" id="profile-phone" placeholder="+51 987 654 321"
                                 inputmode="numeric" pattern="\+51 [0-9]{9}" maxlength="13">
                         </div>
                         <div class="form-group full-width">
-                            <label class="form-label" for="profile-address">Direccion</label>
+                            <label class="form-label" for="profile-address">Direcci&oacute;n</label>
                             <input class="form-input" type="text" id="profile-address"
-                                placeholder="Tu direccion de envio">
+                                placeholder="Tu direcci&oacute;n de env&iacute;o">
                         </div>
                     </div>
                     <div class="form-actions">
@@ -167,7 +157,7 @@
 
             <!-- Section: Password -->
             <div class="profile-section" id="section-password">
-                <h1 class="section-title">Cambiar Contrasena</h1>
+                <h1 class="section-title">Cambiar contrase&ntilde;a</h1>
                 <p class="section-subtitle">Puedes cambiar tu contraseña cada 15 días. Debe tener al menos 9 caracteres, una mayúscula, un número y un carácter especial.</p>
 
                 <form class="profile-card" id="password-form">
@@ -180,20 +170,20 @@
                     </div>
                     <div class="form-grid">
                         <div class="form-group full-width">
-                            <label class="form-label" for="current-password">Contrasena actual</label>
+                            <label class="form-label" for="current-password">Contrase&ntilde;a actual</label>
                             <input class="form-input" type="password" id="current-password" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="new-password">Nueva contrasena</label>
+                            <label class="form-label" for="new-password">Nueva contrase&ntilde;a</label>
                             <input class="form-input" type="password" id="new-password" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="confirm-password">Confirmar nueva contrasena</label>
+                            <label class="form-label" for="confirm-password">Confirmar nueva contrase&ntilde;a</label>
                             <input class="form-input" type="password" id="confirm-password" required>
                         </div>
                     </div>
                     <div class="form-actions">
-                        <button type="submit" class="btn btn--primary">Cambiar contrasena</button>
+                        <button type="submit" class="btn btn--primary">Cambiar contrase&ntilde;a</button>
                     </div>
                 </form>
             </div>
@@ -204,8 +194,8 @@
                 <p class="section-subtitle">Productos que has marcado como favoritos</p>
                 <div class="products-grid" id="favorites-grid"></div>
                 <div class="empty-state" id="favorites-empty" style="display:none;">
-                    <div class="empty-state__icon">♡</div>
-                    <p class="empty-state__text">Aun no tienes favoritos. Explora la tienda y marca los productos que te
+                    <div class="empty-state__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 8.6c0 4.5-8.8 10-8.8 10S3.2 13.1 3.2 8.6A4.6 4.6 0 0 1 12 6.4a4.6 4.6 0 0 1 8.8 2.2z"/></svg></div>
+                    <p class="empty-state__text">A&uacute;n no tienes favoritos. Explora la tienda y marca los productos que te
                         gusten.</p>
                 </div>
             </div>
@@ -216,7 +206,7 @@
                 <p class="section-subtitle">Productos seleccionados para ti basados en tus intereses</p>
                 <div class="products-grid" id="recommendations-grid"></div>
                 <div class="empty-state" id="recommendations-empty" style="display:none;">
-                    <div class="empty-state__icon">⭐</div>
+                    <div class="empty-state__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg></div>
                     <p class="empty-state__text">Agrega favoritos para recibir recomendaciones personalizadas.</p>
                 </div>
             </div>
@@ -240,8 +230,8 @@
                     </table>
                 </div>
                 <div class="empty-state" id="orders-empty" style="display:none;">
-                    <div class="empty-state__icon">📦</div>
-                    <p class="empty-state__text">Aun no has realizado ninguna compra.</p>
+                    <div class="empty-state__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14v18l-2-1.5-2 1.5-3-1.5-3 1.5-2-1.5L5 21z"/><path d="M9 8h6m-6 4h6m-6 4h4"/></svg></div>
+                    <p class="empty-state__text">A&uacute;n no has realizado ninguna compra.</p>
                 </div>
             </div>
 
@@ -253,7 +243,7 @@
         <div class="photo-modal__overlay"></div>
         <div class="photo-modal__content">
             <button type="button" class="photo-modal__close" aria-label="Cerrar">&times;</button>
-            <img id="photo-modal-img" src="" alt="Foto de perfil completa" loading="lazy" decoding="async">
+            <img id="photo-modal-img" src="assets/avatar-placeholder.svg" alt="Foto de perfil completa" loading="lazy" decoding="async">
         </div>
     </div>
 
@@ -264,22 +254,16 @@
         <div class="avatar-menu__overlay"></div>
         <div class="avatar-menu__sheet">
             <div class="avatar-menu__handle"></div>
-            <h3 class="avatar-menu__title">Foto de Perfil</h3>
+            <h2 class="avatar-menu__title">Foto de Perfil</h2>
             <ul class="avatar-menu__list">
                 <li>
-                    <button type="button" class="avatar-menu__item" id="menu-view-avatar">
-                        <span class="avatar-menu__icon">👁</span> Ver foto completa
-                    </button>
+                    <button type="button" class="avatar-menu__item" id="menu-view-avatar"><span class="avatar-menu__icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="2.5"/></svg></span>Ver foto completa</button>
                 </li>
                 <li>
-                    <button type="button" class="avatar-menu__item" id="menu-change-avatar">
-                        <span class="avatar-menu__icon">📷</span> Subir nueva foto
-                    </button>
+                    <button type="button" class="avatar-menu__item" id="menu-change-avatar"><span class="avatar-menu__icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h3l1.5-2h7L17 7h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span>Subir nueva foto</button>
                 </li>
                 <li>
-                    <button type="button" class="avatar-menu__item avatar-menu__item--danger" id="menu-delete-avatar">
-                        <span class="avatar-menu__icon">🗑</span> Eliminar foto actual
-                    </button>
+                    <button type="button" class="avatar-menu__item avatar-menu__item--danger" id="menu-delete-avatar"><span class="avatar-menu__icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m4 4v5m4-5v5"/></svg></span>Eliminar foto actual</button>
                 </li>
             </ul>
             <button type="button" class="avatar-menu__cancel">Cancelar</button>
@@ -305,25 +289,29 @@
             if (!apiOverride && /^\?https?:\/\//i.test(window.location.search)) {
                 apiOverride = normalizeApiBase(window.location.search.slice(1));
             }
-            if (apiOverride) {
-                localStorage.setItem('wan_api_base', apiOverride);
-            }
-            var savedWanApi = normalizeApiBase(localStorage.getItem('wan_api_base'));
-            window.API_BASE = savedWanApi || window.DEPLOY_API_BASE || window.location.origin;
 
-            if (!savedWanApi && window.location.port === '8000') {
-                window.API_BASE = window.location.protocol + '//' + window.location.hostname + ':5000';
+            var savedWanApi = '';
+            try {
+                if (apiOverride) localStorage.setItem('wan_api_base', apiOverride);
+                savedWanApi = normalizeApiBase(localStorage.getItem('wan_api_base'));
+            } catch (e) {
+                // El almacenamiento puede estar bloqueado en sesiones file://.
             }
-            
-            // Inyectar API_BASE en las variables globales si es necesario
-            if (window.location.port === '8000' && !savedWanApi) {
-                window.API_BASE = window.location.protocol + '//' + window.location.hostname + ':5000';
+
+            var configuredApi = normalizeApiBase(window.DEPLOY_API_BASE);
+            var isFrontendDevServer = window.location.port === '8000';
+            var localApiFallback = '';
+            if (!savedWanApi && !configuredApi && isFrontendDevServer) {
+                localApiFallback = 'http://' + (window.location.hostname || 'localhost') + ':5000';
             }
+
+            window.API_BASE = savedWanApi || configuredApi || localApiFallback ||
+                (window.location.origin === 'null' ? '' : window.location.origin);
         })();
     </script>
     <script src="js/api-config.js"></script>
     <script src="js/theme-manager.js?v=20260504"></script>
-    <script src="js/profile.js?v=20260504"></script>
+    <script src="js/profile.js?v=20261009"></script>
 </body>
 
 </html>
